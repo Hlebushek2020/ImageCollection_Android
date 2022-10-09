@@ -4,6 +4,7 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -12,6 +13,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
@@ -38,13 +41,21 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
-        MainActivity ma = this;
-        ((Button) findViewById(R.id.button)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent chooseFile = new Intent(ma, DirectoryChooserActivity.class);
-                directoryChooser.launch(chooseFile);
-            }
-        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.open_folder) {
+            Intent chooseFile = new Intent(this, DirectoryChooserActivity.class);
+            directoryChooser.launch(chooseFile);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
