@@ -3,6 +3,8 @@ package com.sergeygovorunov.imagecollection;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -16,6 +18,8 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class DirectoryChooserActivity extends AppCompatActivity {
+
+    public static final String KEY_SELECTED_FILE = "selectedFile";
 
     private RecyclerView rv_folder_list;
     private Button b_cancel;
@@ -36,27 +40,45 @@ public class DirectoryChooserActivity extends AppCompatActivity {
                 Arrays.asList(tmpFiles) : new ArrayList<>());
         folderLa = new DirectoryChooserViewAdapter(this, allDirectory);
         folderLa.setOnItemClickListener(new DirectoryChooserViewAdapter.OnItemClickListener() {
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onItemClick(View view, File file, int position) {
                 allDirectory.clear();
+                currentFolder = file;
                 File[] tmpFiles = file.listFiles(File::isDirectory);
-                Collections.addAll(allDirectory, tmpFiles);
+                if (tmpFiles != null) {
+                    Collections.addAll(allDirectory, tmpFiles);
+                    folderLa.notifyDataSetChanged();
+                }
             }
         });
         rv_folder_list.setAdapter(folderLa);
-        b_cancel = findViewById(R.id.cancel);
-        b_cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
+        DirectoryChooserActivity dsa = this;
         b_ok = findViewById(R.id.ok);
         b_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent data = new Intent();
+                data.putExtra(KEY_SELECTED_FILE, currentFolder);
+                setResult(RESULT_OK, data);
+                finish();
             }
         });
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    @Override
+    public void onBackPressed() {
+        if (Environment.getExternalStorageDirectory().equals(currentFolder)) {
+            super.onBackPressed();
+        } else {
+            currentFolder = currentFolder.getParentFile();
+            File[] tmpFiles = currentFolder.listFiles(File::isDirectory);
+            if (tmpFiles != null) {
+                allDirectory.clear();
+                Collections.addAll(allDirectory, tmpFiles);
+                folderLa.notifyDataSetChanged();
+            }
+        }
     }
 }
