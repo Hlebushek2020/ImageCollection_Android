@@ -6,6 +6,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,16 +19,25 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.sergeygovorunov.imagecollection.models.CollectionListViewAdapter;
+
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> directoryChooser;
 
+    private RecyclerView rv_collection_list;
+    private RecyclerView rv_file_list;
+
+    private CollectionListViewAdapter adapter_collection_list;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        rv_collection_list = findViewById(R.id.collection_list);
+        rv_file_list = findViewById(R.id.file_list);
         directoryChooser = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
