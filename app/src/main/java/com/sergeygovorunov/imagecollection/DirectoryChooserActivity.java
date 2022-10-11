@@ -53,7 +53,6 @@ public class DirectoryChooserActivity extends AppCompatActivity {
             }
         });
         rv_folder_list.setAdapter(folderLa);
-        DirectoryChooserActivity dsa = this;
         b_ok = findViewById(R.id.ok);
         b_ok.setOnClickListener(new View.OnClickListener() {
             @Override
