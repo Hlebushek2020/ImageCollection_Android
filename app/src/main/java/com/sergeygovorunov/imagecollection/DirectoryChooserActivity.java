@@ -48,8 +48,8 @@ public class DirectoryChooserActivity extends AppCompatActivity {
                 File[] tmpFiles = file.listFiles(File::isDirectory);
                 if (tmpFiles != null) {
                     Collections.addAll(allDirectory, tmpFiles);
-                    folderLa.notifyDataSetChanged();
                 }
+                folderLa.notifyDataSetChanged();
             }
         });
         rv_folder_list.setAdapter(folderLa);

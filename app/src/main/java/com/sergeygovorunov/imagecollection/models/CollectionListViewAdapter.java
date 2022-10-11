@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,13 +31,14 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
     @NonNull
     @Override
     public CollectionListViewAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.directory_chooser_item, parent, false);
+        View view = mInflater.inflate(R.layout.collection_list_item, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CollectionListViewAdapter.ViewHolder holder, int position) {
-
+        File file = collections.get(position);
+        holder.directoryName.setText(file.getName());
     }
 
     @Override
@@ -45,8 +47,13 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        TextView directoryName;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            directoryName = itemView.findViewById(R.id.directoryName);
+            itemView.setOnClickListener(this);
         }
 
         @Override
