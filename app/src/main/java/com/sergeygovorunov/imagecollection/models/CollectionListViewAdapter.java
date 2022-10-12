@@ -23,9 +23,11 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
 
     public CollectionListViewAdapter(Context context, File current) {
         mInflater = LayoutInflater.from(context);
-        collections.add(current);
         File[] tmpDirectories = current.listFiles(File::isDirectory);
-        Collections.addAll(collections, tmpDirectories);
+        if (tmpDirectories != null) {
+            Collections.addAll(collections, tmpDirectories);
+        }
+        collections.add(current);
     }
 
     @NonNull

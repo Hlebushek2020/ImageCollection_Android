@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.sergeygovorunov.imagecollection.models.CollectionListViewAdapter;
+import com.sergeygovorunov.imagecollection.models.FileListViewAdapter;
 
 import java.io.File;
 
@@ -30,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rv_collection_list;
     private RecyclerView rv_file_list;
 
-    private CollectionListViewAdapter adapter_collection_list;
+    private CollectionListViewAdapter collectionListViewAdapter;
+    private FileListViewAdapter fileListViewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,19 +40,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         rv_collection_list = findViewById(R.id.collection_list);
         rv_file_list = findViewById(R.id.file_list);
+        ActivityResultCallback<ActivityResult> arc = result -> {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                // There are no request codes
+                Intent data = result.getData();
+                File dir = (File) data.getExtras().get(DirectoryChooserActivity.KEY_SELECTED_FILE);
+                collectionListViewAdapter = new CollectionListViewAdapter(this, dir);
+                rv_collection_list.setAdapter(collectionListViewAdapter);
+                fileListViewAdapter = new FileListViewAdapter(this, dir);
+                rv_file_list.setAdapter(fileListViewAdapter);
+            }
+        };
         directoryChooser = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        if (result.getResultCode() == Activity.RESULT_OK) {
-                            // There are no request codes
-                            Intent data = result.getData();
-                            File dir = (File) data.getExtras().get(DirectoryChooserActivity.KEY_SELECTED_FILE);
-                            throw new RuntimeException(dir.getAbsolutePath());
-                        }
-                    }
-                });
+                new ActivityResultContracts.StartActivityForResult(), arc);
     }
 
     @Override
