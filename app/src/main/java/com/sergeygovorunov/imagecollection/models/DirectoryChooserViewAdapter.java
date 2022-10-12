@@ -1,5 +1,6 @@
 package com.sergeygovorunov.imagecollection.models;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,18 +13,25 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sergeygovorunov.imagecollection.R;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class DirectoryChooserViewAdapter extends RecyclerView.Adapter<DirectoryChooserViewAdapter.ViewHolder> {
 
-    private List<File> mData;
+    private File current;
+    private ArrayList<File> directoriesInCurrent = new ArrayList<>();
     private LayoutInflater mInflater;
-    private OnItemClickListener mClickListener;
 
     // data is passed into the constructor
-    public DirectoryChooserViewAdapter(Context context, List<File> data) {
+    public DirectoryChooserViewAdapter(Context context, File initDirectory) {
         this.mInflater = LayoutInflater.from(context);
-        this.mData = data;
+        current = initDirectory;
+        File[] newFiles = initDirectory.listFiles(File::isDirectory);
+        if (newFiles != null) {
+            Collections.addAll(directoriesInCurrent, newFiles);
+        }
     }
 
     // inflates the row layout from xml when needed
@@ -37,14 +45,14 @@ public class DirectoryChooserViewAdapter extends RecyclerView.Adapter<DirectoryC
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        File file = mData.get(position);
+        File file = directoriesInCurrent.get(position);
         holder.directoryName.setText(file.getName());
     }
 
     // total number of rows
     @Override
     public int getItemCount() {
-        return mData.size();
+        return directoriesInCurrent.size();
     }
 
     // stores and recycles views as they are scrolled off screen
@@ -58,27 +66,32 @@ public class DirectoryChooserViewAdapter extends RecyclerView.Adapter<DirectoryC
             itemView.setOnClickListener(this);
         }
 
+        @SuppressLint("NotifyDataSetChanged")
         @Override
         public void onClick(View view) {
-            if (mClickListener != null) {
-                int position = getAdapterPosition();
-                mClickListener.onItemClick(view, getItem(position), position);
+            current = directoriesInCurrent.get(getAdapterPosition());
+            directoriesInCurrent.clear();
+            File[] newFiles = current.listFiles(File::isDirectory);
+            if (newFiles != null) {
+                Collections.addAll(directoriesInCurrent, newFiles);
             }
+            notifyDataSetChanged();
         }
     }
 
-    // convenience method for getting data at click position
-    File getItem(int position) {
-        return mData.get(position);
+    public File getCurrent() {
+        return current;
     }
 
-    // allows clicks events to be caught
-    public void setOnItemClickListener(OnItemClickListener itemClickListener) {
-        this.mClickListener = itemClickListener;
-    }
-
-    // parent activity will implement this method to respond to click events
-    public interface OnItemClickListener {
-        void onItemClick(View view, File file, int position);
+    @SuppressLint("NotifyDataSetChanged")
+    public void previous() {
+        File parent = current.getParentFile();
+        File[] newFiles = parent.listFiles(File::isDirectory);
+        if (newFiles != null) {
+            current = parent;
+            directoriesInCurrent.clear();
+            Collections.addAll(directoriesInCurrent, newFiles);
+            notifyDataSetChanged();
+        }
     }
 }

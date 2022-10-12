@@ -13,71 +13,38 @@ import android.widget.Button;
 import com.sergeygovorunov.imagecollection.models.DirectoryChooserViewAdapter;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 public class DirectoryChooserActivity extends AppCompatActivity {
 
     public static final String KEY_SELECTED_FILE = "selectedFile";
 
-    private RecyclerView rv_folder_list;
-    private Button b_cancel;
-    private Button b_ok;
-
-    private File currentFolder;
-    private DirectoryChooserViewAdapter folderLa;
-    private ArrayList<File> allDirectory;
+    private DirectoryChooserViewAdapter directoryChooserViewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_directory_chooser);
-        rv_folder_list = findViewById(R.id.folder_list);
-        currentFolder = Environment.getExternalStorageDirectory();
-        File[] tmpFiles = currentFolder.listFiles(File::isDirectory);
-        allDirectory = new ArrayList<>(tmpFiles != null ?
-                Arrays.asList(tmpFiles) : new ArrayList<>());
-        folderLa = new DirectoryChooserViewAdapter(this, allDirectory);
-        folderLa.setOnItemClickListener(new DirectoryChooserViewAdapter.OnItemClickListener() {
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onItemClick(View view, File file, int position) {
-                allDirectory.clear();
-                currentFolder = file;
-                File[] tmpFiles = file.listFiles(File::isDirectory);
-                if (tmpFiles != null) {
-                    Collections.addAll(allDirectory, tmpFiles);
-                }
-                folderLa.notifyDataSetChanged();
-            }
-        });
-        rv_folder_list.setAdapter(folderLa);
-        b_ok = findViewById(R.id.ok);
-        b_ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent data = new Intent();
-                data.putExtra(KEY_SELECTED_FILE, currentFolder);
-                setResult(RESULT_OK, data);
-                finish();
-            }
+        RecyclerView recyclerView_directories = findViewById(R.id.folder_list);
+        File current = Environment.getExternalStorageDirectory();
+        directoryChooserViewAdapter = new DirectoryChooserViewAdapter(this, current);
+        recyclerView_directories.setAdapter(directoryChooserViewAdapter);
+        Button button_ok = findViewById(R.id.ok);
+        button_ok.setOnClickListener(view -> {
+            Intent data = new Intent();
+            data.putExtra(KEY_SELECTED_FILE, directoryChooserViewAdapter.getCurrent());
+            setResult(RESULT_OK, data);
+            finish();
         });
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onBackPressed() {
-        if (Environment.getExternalStorageDirectory().equals(currentFolder)) {
+        File current = directoryChooserViewAdapter.getCurrent();
+        if (Environment.getExternalStorageDirectory().equals(current)) {
             super.onBackPressed();
         } else {
-            currentFolder = currentFolder.getParentFile();
-            File[] tmpFiles = currentFolder.listFiles(File::isDirectory);
-            if (tmpFiles != null) {
-                allDirectory.clear();
-                Collections.addAll(allDirectory, tmpFiles);
-                folderLa.notifyDataSetChanged();
-            }
+            directoryChooserViewAdapter.previous();
         }
     }
 }
