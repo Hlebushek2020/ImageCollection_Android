@@ -1,5 +1,6 @@
-package com.sergeygovorunov.imagecollection.models;
+package com.sergeygovorunov.imagecollection.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,27 +13,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sergeygovorunov.imagecollection.R;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapter.ViewHolder> {
 
     private LayoutInflater mInflater;
-    private OnItemClickListener mClickListener;
+    private OnItemChangedListener mClickListener;
     private ArrayList<File> files = new ArrayList<>();
 
-    public FileListViewAdapter(Context context, File current) {
+    public FileListViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
-        File[] tmpFiles = current.listFiles(File::isFile);
-        for (File file : tmpFiles) {
-            String fileName = file.getName();
-            String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-            if (extension.equals("bmp") || extension.equals("jpg") ||
-                    extension.equals("jpeg") || extension.equals("png")) {
-                files.add(file);
-            }
-        }
     }
 
     @NonNull
@@ -67,7 +57,7 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
         public void onClick(View view) {
             if (mClickListener != null) {
                 int position = getAdapterPosition();
-                mClickListener.onItemClick(view, getItem(position), position);
+                mClickListener.onItemChanged(getItem(position), position);
             }
         }
     }
@@ -76,11 +66,31 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
         return files.get(position);
     }
 
-    public void setOnItemClickListener(OnItemClickListener itemClickListener) {
+    @SuppressLint("NotifyDataSetChanged")
+    public void setCollection(File collection) {
+        if (files.size() > 0) {
+            files = new ArrayList<>();
+        }
+        File[] tmpFiles = collection.listFiles(File::isFile);
+        for (File file : tmpFiles) {
+            String fileName = file.getName();
+            String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+            if (extension.equals("bmp") || extension.equals("jpg") ||
+                    extension.equals("jpeg") || extension.equals("png")) {
+                files.add(file);
+            }
+        }
+        notifyDataSetChanged();
+        if (mClickListener != null && files.size() > 0) {
+            mClickListener.onItemChanged(getItem(0), 0);
+        }
+    }
+
+    public void setOnItemClickListener(OnItemChangedListener itemClickListener) {
         this.mClickListener = itemClickListener;
     }
 
-    public interface OnItemClickListener {
-        void onItemClick(View view, File file, int position);
+    public interface OnItemChangedListener {
+        void onItemChanged(File item, int position);
     }
 }

@@ -1,5 +1,6 @@
-package com.sergeygovorunov.imagecollection.models;
+package com.sergeygovorunov.imagecollection.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,16 +19,11 @@ import java.util.Collections;
 public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionListViewAdapter.ViewHolder> {
 
     private LayoutInflater mInflater;
-    private OnItemClickListener mClickListener;
+    private OnCollectionChangedListener mClickListener;
     private ArrayList<File> collections = new ArrayList<>();
 
-    public CollectionListViewAdapter(Context context, File current) {
+    public CollectionListViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
-        File[] tmpDirectories = current.listFiles(File::isDirectory);
-        if (tmpDirectories != null) {
-            Collections.addAll(collections, tmpDirectories);
-        }
-        collections.add(current);
     }
 
     @NonNull
@@ -62,7 +58,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         public void onClick(View view) {
             if (mClickListener != null) {
                 int position = getAdapterPosition();
-                mClickListener.onItemClick(view, getItem(position), position);
+                mClickListener.onCollectionChanged(getItem(position), position);
             }
         }
     }
@@ -71,11 +67,27 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         return collections.get(position);
     }
 
-    public void setOnItemClickListener(OnItemClickListener itemClickListener) {
-        this.mClickListener = itemClickListener;
+    @SuppressLint("NotifyDataSetChanged")
+    public void setBaseDirectory(File baseDirectory) {
+        if (collections.size() > 0) {
+            collections = new ArrayList<>();
+        }
+        File[] tmpDirectories = baseDirectory.listFiles(File::isDirectory);
+        collections.add(baseDirectory);
+        if (tmpDirectories != null) {
+            Collections.addAll(collections, tmpDirectories);
+        }
+        notifyDataSetChanged();
+        if (mClickListener != null && collections.size() > 0) {
+            mClickListener.onCollectionChanged(baseDirectory, 0);
+        }
     }
 
-    public interface OnItemClickListener {
-        void onItemClick(View view, File file, int position);
+    public void setOnCollectionChangedListener(OnCollectionChangedListener onCollectionChangedListener) {
+        this.mClickListener = onCollectionChangedListener;
+    }
+
+    public interface OnCollectionChangedListener {
+        void onCollectionChanged(File collection, int position);
     }
 }

@@ -3,17 +3,14 @@ package com.sergeygovorunov.imagecollection;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.View;
 import android.widget.Button;
 
-import com.sergeygovorunov.imagecollection.models.DirectoryChooserViewAdapter;
+import com.sergeygovorunov.imagecollection.adapters.DirectoryChooserViewAdapter;
 
 import java.io.File;
-import java.util.Collections;
 
 public class DirectoryChooserActivity extends AppCompatActivity {
 

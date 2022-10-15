@@ -1,4 +1,4 @@
-package com.sergeygovorunov.imagecollection.models;
+package com.sergeygovorunov.imagecollection.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -14,9 +14,7 @@ import com.sergeygovorunov.imagecollection.R;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 public class DirectoryChooserViewAdapter extends RecyclerView.Adapter<DirectoryChooserViewAdapter.ViewHolder> {
 
