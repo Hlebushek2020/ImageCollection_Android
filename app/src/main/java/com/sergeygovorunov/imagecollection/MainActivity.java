@@ -16,11 +16,14 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
@@ -33,9 +36,10 @@ import com.sergeygovorunov.imagecollection.adapters.FileListViewAdapter;
 
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity /*implements GestureDetector.OnGestureListener*/ {
 
     private ActivityResultLauncher<Intent> directoryChooser;
+    private GestureDetector gestureDetector;
 
     private RecyclerView rv_collection_list;
     private RecyclerView rv_file_list;
@@ -67,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
             Bitmap bitmap = Bitmap.createScaledBitmap(bitmapOrig, (int) nw, (int) nh, false);
             Drawable drawable = new BitmapDrawable(bitmap);
             image_switcher.setImageDrawable(drawable);
+            main_drawer_layout.closeDrawers();
         });
         rv_file_list = findViewById(R.id.file_list);
         rv_file_list.setAdapter(fileListViewAdapter);
@@ -81,12 +86,8 @@ public class MainActivity extends AppCompatActivity {
         rv_collection_list.setAdapter(collectionListViewAdapter);
         //
         image_switcher = findViewById(R.id.image_switcher);
-        Animation inAnim = new TranslateAnimation(0, 100, 0, 0);
-        inAnim.setDuration(1000);
-        image_switcher.setInAnimation(inAnim);
-        Animation outAnim = new TranslateAnimation(-100, 0, 0, 0);
-        outAnim.setDuration(1000);
-        image_switcher.setOutAnimation(outAnim);
+        image_switcher.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.image_switcher_in));
+        image_switcher.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.image_switcher_out));
         image_switcher.setFactory(() -> {
             ImageView imageView = new ImageView(this);
             imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -103,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
                 collectionListViewAdapter.setBaseDirectory(baseDirectory);
             }
         });
+        //
+        //gestureDetector = new GestureDetector(this, this);
     }
 
     @Override
@@ -120,4 +123,39 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    /*@Override
+    public boolean onDown(MotionEvent motionEvent) {
+        return true;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent motionEvent) {
+        return true;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        return true;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        if (motionEvent.getX() > motionEvent1.getX()) {
+            fileListViewAdapter.next();
+        } else if (motionEvent.getX() < motionEvent1.getX()) {
+            fileListViewAdapter.previous();
+        }
+        return true;
+    }*/
 }

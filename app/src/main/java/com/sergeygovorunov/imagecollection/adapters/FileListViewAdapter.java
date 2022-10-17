@@ -20,6 +20,7 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
     private LayoutInflater mInflater;
     private OnItemChangedListener mClickListener;
     private ArrayList<File> files = new ArrayList<>();
+    private int currentIndex = 0;
 
     public FileListViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -56,14 +57,28 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
         @Override
         public void onClick(View view) {
             if (mClickListener != null) {
-                int position = getAdapterPosition();
-                mClickListener.onItemChanged(getItem(position), position);
+                currentIndex = getAdapterPosition();
+                mClickListener.onItemChanged(getItem(currentIndex), currentIndex);
             }
         }
     }
 
     File getItem(int position) {
         return files.get(position);
+    }
+
+    public void next() {
+        if (currentIndex < files.size() - 1 && mClickListener != null) {
+            currentIndex++;
+            mClickListener.onItemChanged(files.get(currentIndex), currentIndex);
+        }
+    }
+
+    public void previous() {
+        if (currentIndex > 0 && mClickListener != null) {
+            currentIndex--;
+            mClickListener.onItemChanged(files.get(currentIndex), currentIndex);
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
