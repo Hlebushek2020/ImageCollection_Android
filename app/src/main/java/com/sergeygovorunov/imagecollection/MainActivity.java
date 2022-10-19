@@ -1,13 +1,5 @@
 package com.sergeygovorunov.imagecollection;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GestureDetectorCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -22,10 +14,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.sergeygovorunov.imagecollection.adapters.CollectionListViewAdapter;
 import com.sergeygovorunov.imagecollection.adapters.FileListViewAdapter;
@@ -44,6 +45,11 @@ public class MainActivity extends AppCompatActivity {
 
     private CollectionListViewAdapter collectionListViewAdapter;
     private FileListViewAdapter fileListViewAdapter;
+
+    private Animation image_switcher_lin;
+    private Animation image_switcher_lout;
+    private Animation image_switcher_rin;
+    private Animation image_switcher_rout;
 
     private int drawerState;
     //private Object drawerStateSync = new Object();
@@ -85,9 +91,12 @@ public class MainActivity extends AppCompatActivity {
         rv_collection_list = findViewById(R.id.collection_list);
         rv_collection_list.setAdapter(collectionListViewAdapter);
         //
+        image_switcher_lin = AnimationUtils.loadAnimation(this, R.anim.image_switcher_lin);
+        image_switcher_lout = AnimationUtils.loadAnimation(this, R.anim.image_switcher_lout);
+        image_switcher_rin = AnimationUtils.loadAnimation(this, R.anim.image_switcher_rin);
+        image_switcher_rout = AnimationUtils.loadAnimation(this, R.anim.image_switcher_rout);
+        //
         image_switcher = findViewById(R.id.image_switcher);
-        image_switcher.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.image_switcher_in));
-        image_switcher.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.image_switcher_out));
         image_switcher.setFactory(() -> {
             ImageView imageView = new ImageView(this);
             imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -161,8 +170,12 @@ public class MainActivity extends AppCompatActivity {
             float size = Math.abs(motionEvent.getX() - motionEvent1.getX());
             if (size > 50.0d) {
                 if (motionEvent.getX() > motionEvent1.getX()) {
+                    image_switcher.setInAnimation(image_switcher_rin);
+                    image_switcher.setOutAnimation(image_switcher_rout);
                     fileListViewAdapter.next();
                 } else if (motionEvent.getX() < motionEvent1.getX()) {
+                    image_switcher.setInAnimation(image_switcher_lin);
+                    image_switcher.setOutAnimation(image_switcher_lout);
                     fileListViewAdapter.previous();
                 }
             }
