@@ -58,13 +58,26 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
         public void onClick(View view) {
             if (mClickListener != null) {
                 currentIndex = getAdapterPosition();
-                mClickListener.onItemChanged(getItem(currentIndex), currentIndex);
+                mClickListener.onItemChanged(files.get(currentIndex), currentIndex);
             }
         }
     }
 
-    File getItem(int position) {
-        return files.get(position);
+    public File getCurrentItem() {
+        return files.get(currentIndex);
+    }
+
+    public void removeCurrentItem() {
+        files.remove(currentIndex);
+        notifyItemRemoved(currentIndex);
+        if (files.size() > 0) {
+            if (currentIndex >= files.size()) {
+                currentIndex = files.size() - 1;
+            }
+            mClickListener.onItemChanged(files.get(currentIndex), currentIndex);
+        } else {
+            currentIndex = 0;
+        }
     }
 
     public void next() {
@@ -97,7 +110,7 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
         }
         notifyDataSetChanged();
         if (mClickListener != null && files.size() > 0) {
-            mClickListener.onItemChanged(getItem(0), 0);
+            mClickListener.onItemChanged(files.get(0), 0);
         }
     }
 

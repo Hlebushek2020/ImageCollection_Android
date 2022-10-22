@@ -2,6 +2,8 @@ package com.sergeygovorunov.imagecollection;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -53,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
 
     private int drawerState;
     //private Object drawerStateSync = new Object();
+
+    private AlertDialog.Builder deleteFileAlert;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -146,6 +150,8 @@ public class MainActivity extends AppCompatActivity {
                 //}
             }
         });
+        //
+        deleteFileAlert = new AlertDialog.Builder(this);
     }
 
     @Override
@@ -167,16 +173,32 @@ public class MainActivity extends AppCompatActivity {
     class SimpleGestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-            float size = Math.abs(motionEvent.getX() - motionEvent1.getX());
-            if (size > 50.0d) {
+            float sizeX = Math.abs(motionEvent.getX() - motionEvent1.getX());
+            float sizeY = Math.abs(motionEvent.getY() - motionEvent1.getY());
+            if (sizeX > sizeY && sizeX > 50.0d) {
                 if (motionEvent.getX() > motionEvent1.getX()) {
                     image_switcher.setInAnimation(image_switcher_rin);
                     image_switcher.setOutAnimation(image_switcher_rout);
                     fileListViewAdapter.next();
-                } else if (motionEvent.getX() < motionEvent1.getX()) {
+                } else {
                     image_switcher.setInAnimation(image_switcher_lin);
                     image_switcher.setOutAnimation(image_switcher_lout);
                     fileListViewAdapter.previous();
+                }
+            } else if (sizeY > 50.0d) {
+                if (motionEvent.getY() < motionEvent1.getY()) {
+                    File currentItem = fileListViewAdapter.getCurrentItem();
+                    deleteFileAlert.setMessage("Вы действительно хотите удалить файл " + currentItem.getName() + "?")
+                            .setPositiveButton("Да", (dialogInterface, id) -> {
+                                if (currentItem.delete()) {
+                                    fileListViewAdapter.removeCurrentItem();
+                                }
+                                dialogInterface.dismiss();
+                            })
+                            .setNegativeButton("Нет", (dialogInterface, id) -> {
+                                dialogInterface.dismiss();
+                            });
+                    deleteFileAlert.show();
                 }
             }
             return true;
