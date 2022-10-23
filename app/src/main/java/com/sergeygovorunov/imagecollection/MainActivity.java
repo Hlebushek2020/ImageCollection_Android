@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.Menu;
@@ -54,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
     private Animation image_switcher_lout;
     private Animation image_switcher_rin;
     private Animation image_switcher_rout;
+    private Animation image_switcher_down_p1;
+    private Animation image_switcher_down_p2;
+    private Animation image_switcher_up_p1;
+    private Animation image_switcher_up_p2;
 
     private int drawerState;
     //private Object drawerStateSync = new Object();
@@ -101,6 +106,10 @@ public class MainActivity extends AppCompatActivity {
         image_switcher_lout = AnimationUtils.loadAnimation(this, R.anim.image_switcher_lout);
         image_switcher_rin = AnimationUtils.loadAnimation(this, R.anim.image_switcher_rin);
         image_switcher_rout = AnimationUtils.loadAnimation(this, R.anim.image_switcher_rout);
+        image_switcher_down_p1 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_down_p1);
+        image_switcher_down_p2 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_down_p2);
+        image_switcher_up_p1 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_up_p1);
+        image_switcher_up_p2 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_up_p2);
         //
         image_switcher = findViewById(R.id.image_switcher);
         image_switcher.setFactory(() -> {
@@ -125,9 +134,18 @@ public class MainActivity extends AppCompatActivity {
         //
         selectToCollection = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK) {
-                /*Bundle bundle = result.getData().getExtras();
-                File baseDirectory = (File) bundle.get(DirectoryChooserActivity.KEY_SELECTED_FILE);
-                collectionListViewAdapter.setBaseDirectory(baseDirectory);*/
+                Bundle bundle = result.getData().getExtras();
+                File toCollection = (File) bundle.get(SelectCollectionActivity.KEY_SELECTED_COLLECTION);
+                File selectedItem = fileListViewAdapter.getCurrentItem();
+                File toFile = new File(toCollection.getPath() + File.separatorChar + selectedItem.getName());
+                int counter = 0;
+                while (toFile.exists()) {
+                    toFile = new File(toCollection.getPath() + File.separatorChar + counter + '_' + selectedItem.getName());
+                    counter++;
+                }
+                if (selectedItem.renameTo(toFile)) {
+                    fileListViewAdapter.removeCurrentItem();
+                }
             }
         });
         //

@@ -18,16 +18,17 @@ import java.util.Collections;
 public class SelectCollectionViewAdapter extends RecyclerView.Adapter<SelectCollectionViewAdapter.ViewHolder> {
 
     private LayoutInflater mInflater;
-    private File current;
+    private File current = null;
+    private ViewHolder previous = null;
     private ArrayList<File> collections = new ArrayList<>();
 
     public SelectCollectionViewAdapter(Context context, File initDirectory, File currentCollection) {
         mInflater = LayoutInflater.from(context);
-        current = null;
         File[] newFiles = initDirectory.listFiles(File::isDirectory);
         if (newFiles != null) {
             Collections.addAll(collections, newFiles);
         }
+        collections.remove(currentCollection);
     }
 
     @NonNull
@@ -60,8 +61,16 @@ public class SelectCollectionViewAdapter extends RecyclerView.Adapter<SelectColl
 
         @Override
         public void onClick(View view) {
+            if (previous != null) {
+                previous.directoryName.setBackgroundColor(0xFFFFFFFF);
+            }
             current = collections.get(getAdapterPosition());
+            previous = this;
             directoryName.setBackgroundColor(0xFF6200EE);
         }
+    }
+
+    public File getCurrent() {
+        return current;
     }
 }
