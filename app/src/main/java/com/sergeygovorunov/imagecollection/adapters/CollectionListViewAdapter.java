@@ -21,6 +21,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
     private LayoutInflater mInflater;
     private OnCollectionChangedListener mClickListener;
     private ArrayList<File> collections = new ArrayList<>();
+    private int currentIndex = 0;
 
     public CollectionListViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -57,14 +58,14 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         @Override
         public void onClick(View view) {
             if (mClickListener != null) {
-                int position = getAdapterPosition();
-                mClickListener.onCollectionChanged(getItem(position), position);
+                currentIndex = getAdapterPosition();
+                mClickListener.onCollectionChanged(collections.get(currentIndex), currentIndex);
             }
         }
     }
 
-    File getItem(int position) {
-        return collections.get(position);
+    public File getCurrentCollection() {
+        return collections.get(currentIndex);
     }
 
     @SuppressLint("NotifyDataSetChanged")

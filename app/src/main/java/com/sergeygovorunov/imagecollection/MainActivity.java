@@ -38,6 +38,8 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> directoryChooser;
+    private ActivityResultLauncher<Intent> selectToCollection;
+    private Intent selectToCollectionIntent;
     private GestureDetectorCompat gestureDetector;
 
     private RecyclerView rv_collection_list;
@@ -110,11 +112,22 @@ public class MainActivity extends AppCompatActivity {
             return imageView;
         });
         //
+        selectToCollectionIntent = new Intent(this, SelectCollectionActivity.class);
+        //
         directoryChooser = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK) {
                 Bundle bundle = result.getData().getExtras();
                 File baseDirectory = (File) bundle.get(DirectoryChooserActivity.KEY_SELECTED_FILE);
                 collectionListViewAdapter.setBaseDirectory(baseDirectory);
+                selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_BASE_DIRECTORY, baseDirectory);
+            }
+        });
+        //
+        selectToCollection = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                /*Bundle bundle = result.getData().getExtras();
+                File baseDirectory = (File) bundle.get(DirectoryChooserActivity.KEY_SELECTED_FILE);
+                collectionListViewAdapter.setBaseDirectory(baseDirectory);*/
             }
         });
         //
@@ -185,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                     image_switcher.setOutAnimation(image_switcher_lout);
                     fileListViewAdapter.previous();
                 }
-            } else if (sizeY > 50.0d) {
+            } else if (sizeY > 50.0d && fileListViewAdapter.getItemCount() > 0) {
                 if (motionEvent.getY() < motionEvent1.getY()) {
                     File currentItem = fileListViewAdapter.getCurrentItem();
                     deleteFileAlert.setMessage("Вы действительно хотите удалить файл " + currentItem.getName() + "?")
@@ -199,6 +212,10 @@ public class MainActivity extends AppCompatActivity {
                                 dialogInterface.dismiss();
                             });
                     deleteFileAlert.show();
+                } else {
+                    selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_SELECTED_COLLECTION,
+                            collectionListViewAdapter.getCurrentCollection());
+                    selectToCollection.launch(selectToCollectionIntent);
                 }
             }
             return true;
