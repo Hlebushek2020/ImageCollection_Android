@@ -15,13 +15,13 @@ import java.io.File;
 
 public class SelectCollectionActivity extends AppCompatActivity {
 
-    public static final String KEY_SELECTED_COLLECTION = "selectedColl";
-    public static final String KEY_BASE_DIRECTORY = "selectedColl";
+    public static final String KEY_SELECTED_COLLECTION = "selectedCollection";
+    public static final String KEY_BASE_DIRECTORY = "baseDirectory";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_directory_chooser);
+        setContentView(R.layout.activity_select_collection);
         Bundle bundle = getIntent().getExtras();
         File currentCollection = (File) bundle.get(KEY_SELECTED_COLLECTION);
         File baseDirectory = (File) bundle.get(KEY_BASE_DIRECTORY);

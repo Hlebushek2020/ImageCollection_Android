@@ -24,6 +24,7 @@ public class SelectCollectionViewAdapter extends RecyclerView.Adapter<SelectColl
 
     public SelectCollectionViewAdapter(Context context, File initDirectory, File currentCollection) {
         mInflater = LayoutInflater.from(context);
+        collections.add(initDirectory);
         File[] newFiles = initDirectory.listFiles(File::isDirectory);
         if (newFiles != null) {
             Collections.addAll(collections, newFiles);
