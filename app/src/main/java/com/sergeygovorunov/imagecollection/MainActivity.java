@@ -69,8 +69,41 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //
+        image_switcher = findViewById(R.id.image_switcher);
+        rv_file_list = findViewById(R.id.file_list);
+        main_drawer_layout = findViewById(R.id.main_drawer_layout);
+        rv_collection_list = findViewById(R.id.collection_list);
+        //
         fileListViewAdapter = new FileListViewAdapter(this);
-        fileListViewAdapter.setOnItemClickListener((item, position) -> {
+        fileListViewAdapter.setOnItemClickListener((item, action) -> {
+            // anim
+            switch (action) {
+                case NEXT:
+                    image_switcher.setInAnimation(image_switcher_rin);
+                    image_switcher.setOutAnimation(image_switcher_rout);
+                    break;
+                case MOVE_GET_NEXT:
+                    image_switcher.setInAnimation(image_switcher_rin);
+                    image_switcher.setOutAnimation(image_switcher_down_p1);
+                    break;
+                case REMOVE_GET_NEXT:
+                    image_switcher.setInAnimation(image_switcher_rin);
+                    image_switcher.setOutAnimation(image_switcher_up_p1);
+                    break;
+                case PREVIOUS:
+                    image_switcher.setInAnimation(image_switcher_lin);
+                    image_switcher.setOutAnimation(image_switcher_lout);
+                    break;
+                case MOVE_GET_PREVIOUS:
+                    image_switcher.setInAnimation(image_switcher_lin);
+                    image_switcher.setOutAnimation(image_switcher_down_p1);
+                    break;
+                case REMOVE_GET_PREVIOUS:
+                    image_switcher.setInAnimation(image_switcher_lin);
+                    image_switcher.setOutAnimation(image_switcher_up_p1);
+                    break;
+            }
+            // image
             Bitmap bitmapOrig = BitmapFactory.decodeFile(item.getPath());
             double w = bitmapOrig.getWidth();
             double h = bitmapOrig.getHeight();
@@ -88,16 +121,13 @@ public class MainActivity extends AppCompatActivity {
             image_switcher.setImageDrawable(drawable);
             main_drawer_layout.closeDrawers();
         });
-        rv_file_list = findViewById(R.id.file_list);
         rv_file_list.setAdapter(fileListViewAdapter);
         //
         collectionListViewAdapter = new CollectionListViewAdapter(this);
-        main_drawer_layout = findViewById(R.id.main_drawer_layout);
         collectionListViewAdapter.setOnCollectionChangedListener((collection, position) -> {
             fileListViewAdapter.setCollection(collection);
             main_drawer_layout.closeDrawers();
         });
-        rv_collection_list = findViewById(R.id.collection_list);
         rv_collection_list.setAdapter(collectionListViewAdapter);
         //
         image_switcher_lin = AnimationUtils.loadAnimation(this, R.anim.image_switcher_lin);
@@ -109,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
         image_switcher_up_p1 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_up);
         //image_switcher_up_p2 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_up_p2);
         //
-        image_switcher = findViewById(R.id.image_switcher);
         image_switcher.setFactory(() -> {
             ImageView imageView = new ImageView(this);
             imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -206,16 +235,20 @@ public class MainActivity extends AppCompatActivity {
             float sizeY = Math.abs(motionEvent.getY() - motionEvent1.getY());
             if (sizeX > sizeY && sizeX > 50.0d) {
                 if (motionEvent.getX() > motionEvent1.getX()) {
-                    image_switcher.setInAnimation(image_switcher_rin);
-                    image_switcher.setOutAnimation(image_switcher_rout);
+                    //image_switcher.setInAnimation(image_switcher_rin);
+                    //image_switcher.setOutAnimation(image_switcher_rout);
                     fileListViewAdapter.next();
                 } else {
-                    image_switcher.setInAnimation(image_switcher_lin);
-                    image_switcher.setOutAnimation(image_switcher_lout);
+                    //image_switcher.setInAnimation(image_switcher_lin);
+                    //image_switcher.setOutAnimation(image_switcher_lout);
                     fileListViewAdapter.previous();
                 }
             } else if (sizeY > 50.0d && fileListViewAdapter.getItemCount() > 0) {
                 if (motionEvent.getY() < motionEvent1.getY()) {
+                    selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_SELECTED_COLLECTION,
+                            collectionListViewAdapter.getCurrentCollection());
+                    selectToCollection.launch(selectToCollectionIntent);
+                } else {
                     File currentItem = fileListViewAdapter.getCurrentItem();
                     deleteFileAlert.setMessage("Вы действительно хотите удалить файл " + currentItem.getName() + "?")
                             .setPositiveButton("Да", (dialogInterface, id) -> {
@@ -228,10 +261,6 @@ public class MainActivity extends AppCompatActivity {
                                 dialogInterface.dismiss();
                             });
                     deleteFileAlert.show();
-                } else {
-                    selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_SELECTED_COLLECTION,
-                            collectionListViewAdapter.getCurrentCollection());
-                    selectToCollection.launch(selectToCollectionIntent);
                 }
             }
             return true;

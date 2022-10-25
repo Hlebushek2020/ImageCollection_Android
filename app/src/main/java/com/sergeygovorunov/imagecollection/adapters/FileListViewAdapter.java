@@ -58,8 +58,8 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
         public void onClick(View view) {
             int adapterPosition = getAdapterPosition();
             if (mClickListener != null && currentIndex != adapterPosition) {
-                ItemChangedState itemChangedState = currentIndex > adapterPosition ?
-                        ItemChangedState.PREVIOUS : ItemChangedState.NEXT;
+                ActionThatChangedItem itemChangedState = currentIndex > adapterPosition ?
+                        ActionThatChangedItem.PREVIOUS : ActionThatChangedItem.NEXT;
                 currentIndex = adapterPosition;
                 mClickListener.onItemChanged(files.get(currentIndex), itemChangedState);
             }
@@ -74,11 +74,12 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
         files.remove(currentIndex);
         notifyItemRemoved(currentIndex);
         if (files.size() > 0) {
+            ActionThatChangedItem actionThatChangedItem = isDeleted ? ActionThatChangedItem.REMOVE_GET_NEXT : ActionThatChangedItem.MOVE_GET_NEXT;
             if (currentIndex >= files.size()) {
                 currentIndex = files.size() - 1;
+                actionThatChangedItem = isDeleted ? ActionThatChangedItem.REMOVE_GET_PREVIOUS : ActionThatChangedItem.MOVE_GET_PREVIOUS;
             }
-            mClickListener.onItemChanged(files.get(currentIndex),
-                    isDeleted ? ItemChangedState.REMOVE : ItemChangedState.MOVE);
+            mClickListener.onItemChanged(files.get(currentIndex), actionThatChangedItem);
         } else {
             currentIndex = 0;
         }
@@ -87,14 +88,14 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
     public void next() {
         if (currentIndex < files.size() - 1 && mClickListener != null) {
             currentIndex++;
-            mClickListener.onItemChanged(files.get(currentIndex), ItemChangedState.NEXT);
+            mClickListener.onItemChanged(files.get(currentIndex), ActionThatChangedItem.NEXT);
         }
     }
 
     public void previous() {
         if (currentIndex > 0 && mClickListener != null) {
             currentIndex--;
-            mClickListener.onItemChanged(files.get(currentIndex), ItemChangedState.PREVIOUS);
+            mClickListener.onItemChanged(files.get(currentIndex), ActionThatChangedItem.PREVIOUS);
         }
     }
 
@@ -114,7 +115,7 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
         }
         notifyDataSetChanged();
         if (mClickListener != null && files.size() > 0) {
-            mClickListener.onItemChanged(files.get(0), ItemChangedState.NEXT);
+            mClickListener.onItemChanged(files.get(0), ActionThatChangedItem.NEXT);
         }
     }
 
@@ -123,10 +124,15 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
     }
 
     public interface OnItemChangedListener {
-        void onItemChanged(File item, ItemChangedState changedState);
+        void onItemChanged(File item, ActionThatChangedItem changedState);
     }
 
-    public enum ItemChangedState {
-        NEXT, PREVIOUS, REMOVE, MOVE
+    public enum ActionThatChangedItem {
+        NEXT,
+        PREVIOUS,
+        REMOVE_GET_NEXT,
+        REMOVE_GET_PREVIOUS,
+        MOVE_GET_NEXT,
+        MOVE_GET_PREVIOUS
     }
 }
