@@ -3,6 +3,7 @@ package com.sergeygovorunov.imagecollection;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -31,8 +33,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sergeygovorunov.imagecollection.adapters.CollectionListViewAdapter;
 import com.sergeygovorunov.imagecollection.adapters.FileListViewAdapter;
+import com.sergeygovorunov.imagecollection.dialogs.InputAlertDialog;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private int drawerState;
     //private Object drawerStateSync = new Object();
 
-    private AlertDialog.Builder deleteFileAlert;
+    //private AlertDialog.Builder deleteFileAlert;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -209,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         //
-        deleteFileAlert = new AlertDialog.Builder(this);
+        //deleteFileAlert = new AlertDialog.Builder(this);
     }
 
     @Override
@@ -224,6 +228,35 @@ public class MainActivity extends AppCompatActivity {
             Intent chooseFile = new Intent(this, DirectoryChooserActivity.class);
             directoryChooser.launch(chooseFile);
             return true;
+        } else if (item.getItemId() == R.id.create_collection) {
+            InputAlertDialog inputAlertDialog = new InputAlertDialog(this);
+            inputAlertDialog.setInputAlertDialogActions(new InputAlertDialog.InputAlertDialogActions() {
+                @Override
+                public String OnValidation(String text) {
+                    if ("".equals(text)) {
+                        return "Введите название коллекции";
+                    }
+                    Pattern checkSpecPathSim = Pattern.compile("[<>:\"/\\\\|?*]");
+                    if (checkSpecPathSim.matcher(text).matches()) {
+                        return "Название коллекции содержит запрещенные символы (< > : \" / \\ | ? *)";
+                    }
+                    String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
+                    File checkDirectory = new File(basePath + File.pathSeparator + text);
+                    if (checkDirectory.exists()) {
+                        return "Коллекция с таким названием уже существует";
+                    }
+                    return null;
+                }
+
+                @Override
+                public void OnSuccess(String text) {
+                    String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
+                    File collection = new File(basePath + File.pathSeparator + text);
+                    if (collection.mkdir()) {
+                        collectionListViewAdapter.add(collection);
+                    }
+                }
+            });
         }
         return super.onOptionsItemSelected(item);
     }
@@ -250,7 +283,8 @@ public class MainActivity extends AppCompatActivity {
                     selectToCollection.launch(selectToCollectionIntent);
                 } else {
                     File currentItem = fileListViewAdapter.getCurrentItem();
-                    deleteFileAlert.setMessage("Вы действительно хотите удалить файл " + currentItem.getName() + "?")
+                    AlertDialog.Builder deleteFileAlert = new AlertDialog.Builder(getBaseContext())
+                            .setMessage("Вы действительно хотите удалить файл " + currentItem.getName() + "?")
                             .setPositiveButton("Да", (dialogInterface, id) -> {
                                 if (currentItem.delete()) {
                                     fileListViewAdapter.removeCurrentItem(true);

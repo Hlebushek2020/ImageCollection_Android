@@ -64,6 +64,10 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         }
     }
 
+    public File getBaseDirectory() {
+        return collections.get(0);
+    }
+
     public File getCurrentCollection() {
         return collections.get(currentIndex);
     }
@@ -82,6 +86,11 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         if (mClickListener != null && collections.size() > 0) {
             mClickListener.onCollectionChanged(baseDirectory, 0);
         }
+    }
+
+    public void add(File collection) {
+        collections.add(collection);
+        notifyItemInserted(collections.size() - 1);
     }
 
     public void setOnCollectionChangedListener(OnCollectionChangedListener onCollectionChangedListener) {
