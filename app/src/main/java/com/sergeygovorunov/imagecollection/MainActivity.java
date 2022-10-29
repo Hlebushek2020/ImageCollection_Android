@@ -257,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
+            inputAlertDialog.show();
         }
         return super.onOptionsItemSelected(item);
     }
