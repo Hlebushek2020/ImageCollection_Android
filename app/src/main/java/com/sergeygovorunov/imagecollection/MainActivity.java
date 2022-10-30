@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private int drawerState;
     //private Object drawerStateSync = new Object();
 
-    //private AlertDialog.Builder deleteFileAlert;
+    private AlertDialog.Builder deleteFileAlert;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         //
-        //deleteFileAlert = new AlertDialog.Builder(this);
+        deleteFileAlert = new AlertDialog.Builder(this);
     }
 
     @Override
@@ -229,35 +229,37 @@ public class MainActivity extends AppCompatActivity {
             directoryChooser.launch(chooseFile);
             return true;
         } else if (item.getItemId() == R.id.create_collection) {
-            InputAlertDialog inputAlertDialog = new InputAlertDialog(this);
-            inputAlertDialog.setInputAlertDialogActions(new InputAlertDialog.InputAlertDialogActions() {
-                @Override
-                public String OnValidation(String text) {
-                    if ("".equals(text)) {
-                        return "Введите название коллекции";
+            if (collectionListViewAdapter.getItemCount() > 0) {
+                InputAlertDialog inputAlertDialog = new InputAlertDialog(this);
+                inputAlertDialog.setInputAlertDialogActions(new InputAlertDialog.InputAlertDialogActions() {
+                    @Override
+                    public String OnValidation(String text) {
+                        if ("".equals(text)) {
+                            return "Введите название коллекции";
+                        }
+                        Pattern checkSpecPathSim = Pattern.compile("[<>:\"/\\\\|?*]");
+                        if (checkSpecPathSim.matcher(text).matches()) {
+                            return "Название коллекции содержит запрещенные символы (< > : \" / \\ | ? *)";
+                        }
+                        String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
+                        File checkDirectory = new File(basePath + File.separatorChar + text);
+                        if (checkDirectory.exists()) {
+                            return "Коллекция с таким названием уже существует";
+                        }
+                        return null;
                     }
-                    Pattern checkSpecPathSim = Pattern.compile("[<>:\"/\\\\|?*]");
-                    if (checkSpecPathSim.matcher(text).matches()) {
-                        return "Название коллекции содержит запрещенные символы (< > : \" / \\ | ? *)";
-                    }
-                    String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
-                    File checkDirectory = new File(basePath + File.pathSeparator + text);
-                    if (checkDirectory.exists()) {
-                        return "Коллекция с таким названием уже существует";
-                    }
-                    return null;
-                }
 
-                @Override
-                public void OnSuccess(String text) {
-                    String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
-                    File collection = new File(basePath + File.pathSeparator + text);
-                    if (collection.mkdir()) {
-                        collectionListViewAdapter.add(collection);
+                    @Override
+                    public void OnSuccess(String text) {
+                        String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
+                        File collection = new File(basePath + File.pathSeparator + text);
+                        if (collection.mkdir()) {
+                            collectionListViewAdapter.add(collection);
+                        }
                     }
-                }
-            });
-            inputAlertDialog.show();
+                });
+                inputAlertDialog.show();
+            }
         }
         return super.onOptionsItemSelected(item);
     }
@@ -284,8 +286,7 @@ public class MainActivity extends AppCompatActivity {
                     selectToCollection.launch(selectToCollectionIntent);
                 } else {
                     File currentItem = fileListViewAdapter.getCurrentItem();
-                    AlertDialog.Builder deleteFileAlert = new AlertDialog.Builder(getBaseContext())
-                            .setMessage("Вы действительно хотите удалить файл " + currentItem.getName() + "?")
+                    deleteFileAlert.setMessage("Вы действительно хотите удалить файл " + currentItem.getName() + "?")
                             .setPositiveButton("Да", (dialogInterface, id) -> {
                                 if (currentItem.delete()) {
                                     fileListViewAdapter.removeCurrentItem(true);

@@ -1,5 +1,7 @@
 package com.sergeygovorunov.imagecollection.dialogs;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,23 +14,31 @@ import com.sergeygovorunov.imagecollection.R;
 
 public class InputAlertDialog extends AlertDialog {
 
+    //private Context context;
     private EditText input;
     private TextView error;
     private InputAlertDialogActions iada;
 
     public InputAlertDialog(Context context) {
         super(context);
+        //this.context = context;
     }
 
+    @SuppressLint("InflateParams")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        View view = findViewById(R.id.input_alert_dialog);
+        View view = getLayoutInflater().inflate(R.layout.input_alert_dialog, null);
         setView(view);
         input = view.findViewById(R.id.input_alert_dialog_input);
         error = view.findViewById(R.id.input_alert_dialog_error);
-        error.setVisibility(View.INVISIBLE); //GONE
+        error.setVisibility(View.GONE);
         setButton(DialogInterface.BUTTON_POSITIVE, "Ок", (dialogInterface, id) -> {
-            if (iada != null) {
+        });
+        setButton(DialogInterface.BUTTON_NEGATIVE, "Отмена", (dialogInterface, id) -> {
+        });
+        super.onCreate(savedInstanceState);
+        if (iada != null) {
+            getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view1 -> {
                 String inputText = input.getText().toString().trim();
                 String validatedText = iada.OnValidation(inputText);
                 if (validatedText != null && !"".equals(validatedText)) {
@@ -38,14 +48,8 @@ public class InputAlertDialog extends AlertDialog {
                     iada.OnSuccess(inputText);
                     dismiss();
                 }
-            } else {
-                dismiss();
-            }
-        });
-        setButton(DialogInterface.BUTTON_NEGATIVE, "Отмена", (dialogInterface, id) -> {
-            dismiss();
-        });
-        super.onCreate(savedInstanceState);
+            });
+        }
     }
 
     public void setInputAlertDialogActions(InputAlertDialogActions iada) {
