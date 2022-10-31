@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.FileUtils;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.Menu;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rv_file_list;
     private DrawerLayout main_drawer_layout;
     private ImageSwitcher image_switcher;
+    private Menu optMenu;
 
     private CollectionListViewAdapter collectionListViewAdapter;
     private FileListViewAdapter fileListViewAdapter;
@@ -58,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
     private Animation image_switcher_rin;
     private Animation image_switcher_rout;
     private Animation image_switcher_down_p1;
-    private Animation image_switcher_down_p2;
+    //private Animation image_switcher_down_p2;
     private Animation image_switcher_up_p1;
-    private Animation image_switcher_up_p2;
+    //private Animation image_switcher_up_p2;
 
     private int drawerState;
     //private Object drawerStateSync = new Object();
@@ -130,7 +132,15 @@ public class MainActivity extends AppCompatActivity {
         collectionListViewAdapter = new CollectionListViewAdapter(this);
         collectionListViewAdapter.setOnCollectionChangedListener((collection, position) -> {
             fileListViewAdapter.setCollection(collection);
+            setTitle(collection.getName());
             main_drawer_layout.closeDrawers();
+            if (!collection.equals(collectionListViewAdapter.getBaseDirectory())) {
+                optMenu.findItem(R.id.delete_collection).setEnabled(true);
+                optMenu.findItem(R.id.rename_collection).setEnabled(true);
+            } else {
+                optMenu.findItem(R.id.delete_collection).setEnabled(false);
+                optMenu.findItem(R.id.rename_collection).setEnabled(false);
+            }
         });
         rv_collection_list.setAdapter(collectionListViewAdapter);
         //
@@ -160,6 +170,9 @@ public class MainActivity extends AppCompatActivity {
                 File baseDirectory = (File) bundle.get(DirectoryChooserActivity.KEY_SELECTED_FILE);
                 collectionListViewAdapter.setBaseDirectory(baseDirectory);
                 selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_BASE_DIRECTORY, baseDirectory);
+                optMenu.findItem(R.id.create_collection).setEnabled(true);
+                optMenu.findItem(R.id.delete_collection).setEnabled(false);
+                optMenu.findItem(R.id.rename_collection).setEnabled(false);
             }
         });
         //
@@ -219,19 +232,70 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        optMenu = menu;
         return true;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.open_folder) {
-            Intent chooseFile = new Intent(this, DirectoryChooserActivity.class);
-            directoryChooser.launch(chooseFile);
-            return true;
-        } else if (item.getItemId() == R.id.create_collection) {
-            if (collectionListViewAdapter.getItemCount() > 0) {
-                InputAlertDialog inputAlertDialog = new InputAlertDialog(this);
-                inputAlertDialog.setInputAlertDialogActions(new InputAlertDialog.InputAlertDialogActions() {
+        switch (item.getItemId()) {
+            case R.id.open_folder:
+                Intent chooseFile = new Intent(this, DirectoryChooserActivity.class);
+                directoryChooser.launch(chooseFile);
+                break;
+            case R.id.create_collection:
+                if (collectionListViewAdapter.getItemCount() > 0) {
+                    InputAlertDialog inputAlertDialog = new InputAlertDialog(this);
+                    inputAlertDialog.setTitle("Создание");
+                    inputAlertDialog.setInputAlertDialogActions(new InputAlertDialog.InputAlertDialogActions() {
+                        @Override
+                        public String OnValidation(String text) {
+                            if ("".equals(text)) {
+                                return "Введите название коллекции";
+                            }
+                            Pattern checkSpecPathSim = Pattern.compile("[<>:\"/\\\\|?*]");
+                            if (checkSpecPathSim.matcher(text).matches()) {
+                                return "Название коллекции содержит запрещенные символы (< > : \" / \\ | ? *)";
+                            }
+                            String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
+                            File checkDirectory = new File(basePath + File.separatorChar + text);
+                            if (checkDirectory.exists()) {
+                                return "Коллекция с таким названием уже существует";
+                            }
+                            return null;
+                        }
+
+                        @Override
+                        public void OnSuccess(String text) {
+                            String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
+                            File collection = new File(basePath + File.pathSeparator + text);
+                            if (collection.mkdir()) {
+                                collectionListViewAdapter.add(collection);
+                            }
+                        }
+                    });
+                    inputAlertDialog.show();
+                    break;
+                }
+            case R.id.delete_collection:
+                AlertDialog.Builder confirmDeleteColl = new AlertDialog.Builder(this)
+                        .setMessage("Вы действительно хотите удалить коллекцию "
+                                + collectionListViewAdapter.getCurrentCollection().getName()
+                                + " со всеми ее файлами?")
+                        .setPositiveButton("Да", (dialogInterface, id) -> {
+                            collectionListViewAdapter.deleteCurrent();
+                            dialogInterface.dismiss();
+                        })
+                        .setNegativeButton("Нет", (dialogInterface, id) -> {
+                            dialogInterface.dismiss();
+                        });
+                confirmDeleteColl.show();
+                break;
+            case R.id.rename_collection:
+                Activity _this = this;
+                InputAlertDialog renameCollection = new InputAlertDialog(this);
+                renameCollection.setInputAlertDialogActions(new InputAlertDialog.InputAlertDialogActions() {
                     @Override
                     public String OnValidation(String text) {
                         if ("".equals(text)) {
@@ -251,17 +315,15 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void OnSuccess(String text) {
-                        String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
-                        File collection = new File(basePath + File.pathSeparator + text);
-                        if (collection.mkdir()) {
-                            collectionListViewAdapter.add(collection);
+                        if (collectionListViewAdapter.renameCurrent(text)) {
+                            _this.setTitle(text);
                         }
                     }
                 });
-                inputAlertDialog.show();
-            }
+                renameCollection.show();
+                break;
         }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 
     class SimpleGestureListener extends GestureDetector.SimpleOnGestureListener {

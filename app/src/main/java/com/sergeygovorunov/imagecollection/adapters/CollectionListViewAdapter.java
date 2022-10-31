@@ -2,6 +2,7 @@ package com.sergeygovorunov.imagecollection.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -93,11 +94,44 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         notifyItemInserted(collections.size() - 1);
     }
 
+    public void deleteCurrent() {
+        // TODO: async task
+        deleteRecursive(collections.get(currentIndex));
+        notifyItemRemoved(currentIndex);
+        if (collections.size() > 0) {
+            if (currentIndex >= collections.size()) {
+                currentIndex = collections.size() - 1;
+            }
+            mClickListener.onCollectionChanged(collections.get(currentIndex), currentIndex);
+        } else {
+            currentIndex = 0;
+        }
+    }
+
+    public boolean renameCurrent(String newName) {
+        File current = collections.get(currentIndex);
+        File newCurrent = new File(current.getParent() + File.separatorChar + newName);
+        if (current.renameTo(newCurrent)) {
+            notifyItemChanged(currentIndex);
+            return true;
+        }
+        return false;
+    }
+
     public void setOnCollectionChangedListener(OnCollectionChangedListener onCollectionChangedListener) {
         this.mClickListener = onCollectionChangedListener;
     }
 
     public interface OnCollectionChangedListener {
         void onCollectionChanged(File collection, int position);
+    }
+
+    private void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) {
+                deleteRecursive(child);
+            }
+        }
+        fileOrDirectory.delete();
     }
 }
