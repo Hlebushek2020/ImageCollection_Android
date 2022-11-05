@@ -36,10 +36,21 @@ import com.sergeygovorunov.imagecollection.adapters.CollectionListViewAdapter;
 import com.sergeygovorunov.imagecollection.adapters.FileListViewAdapter;
 import com.sergeygovorunov.imagecollection.dialogs.InputAlertDialog;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String SESSION_FILE_NAME = "session.txt";
 
     private ActivityResultLauncher<Intent> directoryChooser;
     private ActivityResultLauncher<Intent> selectToCollection;
@@ -130,8 +141,8 @@ public class MainActivity extends AppCompatActivity {
         rv_file_list.setAdapter(fileListViewAdapter);
         //
         collectionListViewAdapter = new CollectionListViewAdapter(this);
-        collectionListViewAdapter.setOnCollectionChangedListener((collection, position) -> {
-            fileListViewAdapter.setCollection(collection);
+        collectionListViewAdapter.setOnCollectionChangedListener((collection, item) -> {
+            fileListViewAdapter.setCollection(collection, item);
             setTitle(collection.getName());
             main_drawer_layout.closeDrawers();
             if (!collection.equals(collectionListViewAdapter.getBaseDirectory())) {
@@ -227,12 +238,46 @@ public class MainActivity extends AppCompatActivity {
         });
         //
         deleteFileAlert = new AlertDialog.Builder(this);
+        //
+        File session = new File(getExternalFilesDir(null).getPath()
+                + File.separatorChar + SESSION_FILE_NAME);
+        if (session.exists()) {
+            try (BufferedReader bw = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(session), StandardCharsets.UTF_8))) {
+                String baseDirectory = bw.readLine();
+                String collectionName = bw.readLine();
+                String fileName = bw.readLine();
+                File baseFile = new File(baseDirectory);
+                if (baseFile.exists()) {
+                    File collectionFile = new File(baseFile.getName().equalsIgnoreCase(collectionName) ?
+                            baseDirectory : baseDirectory + File.separatorChar + collectionName);
+                    if (!collectionFile.exists()) {
+                        collectionFile = null;
+                    }
+                    File itemFile = new File(collectionFile.getPath() + File.separatorChar + fileName);
+                    if (!itemFile.exists()) {
+                        itemFile = null;
+                    }
+                    collectionListViewAdapter.init(baseFile, collectionFile, itemFile);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
         optMenu = menu;
+        if (collectionListViewAdapter.getItemCount() > 0) {
+            menu.findItem(R.id.create_collection).setEnabled(true);
+            if (!collectionListViewAdapter.getCurrentCollection().equals(
+                    collectionListViewAdapter.getBaseDirectory())) {
+                menu.findItem(R.id.delete_collection).setEnabled(true);
+                menu.findItem(R.id.rename_collection).setEnabled(true);
+            }
+        }
         return true;
     }
 
@@ -363,5 +408,24 @@ public class MainActivity extends AppCompatActivity {
             }
             return true;
         }
+    }
+
+    @Override
+    protected void onStop() {
+        if (collectionListViewAdapter.getItemCount() > 0) {
+            File session = new File(getExternalFilesDir(null).getPath()
+                    + File.separatorChar + SESSION_FILE_NAME);
+            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(session, false), StandardCharsets.UTF_8))) {
+                bw.write(collectionListViewAdapter.getBaseDirectory().getPath());
+                bw.newLine();
+                bw.write(collectionListViewAdapter.getCurrentCollection().getName());
+                bw.newLine();
+                bw.write(fileListViewAdapter.getCurrentItem().getName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        super.onStop();
     }
 }

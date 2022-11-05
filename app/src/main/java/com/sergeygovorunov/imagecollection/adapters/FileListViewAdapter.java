@@ -100,7 +100,7 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void setCollection(File collection) {
+    public void setCollection(File collection, File selectedItem) {
         if (files.size() > 0) {
             files = new ArrayList<>();
         }
@@ -113,9 +113,12 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
                 files.add(file);
             }
         }
+        if (selectedItem != null) {
+            currentIndex = files.indexOf(selectedItem);
+        }
         notifyDataSetChanged();
         if (mClickListener != null && files.size() > 0) {
-            mClickListener.onItemChanged(files.get(0), ActionThatChangedItem.NEXT);
+            mClickListener.onItemChanged(files.get(currentIndex), ActionThatChangedItem.NEXT);
         }
     }
 

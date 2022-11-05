@@ -60,7 +60,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         public void onClick(View view) {
             if (mClickListener != null) {
                 currentIndex = getAdapterPosition();
-                mClickListener.onCollectionChanged(collections.get(currentIndex), currentIndex);
+                mClickListener.onCollectionChanged(collections.get(currentIndex), null);
             }
         }
     }
@@ -73,20 +73,8 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         return collections.get(currentIndex);
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     public void setBaseDirectory(File baseDirectory) {
-        if (collections.size() > 0) {
-            collections = new ArrayList<>();
-        }
-        File[] tmpDirectories = baseDirectory.listFiles(File::isDirectory);
-        collections.add(baseDirectory);
-        if (tmpDirectories != null) {
-            Collections.addAll(collections, tmpDirectories);
-        }
-        notifyDataSetChanged();
-        if (mClickListener != null && collections.size() > 0) {
-            mClickListener.onCollectionChanged(baseDirectory, 0);
-        }
+        init(baseDirectory, null, null);
     }
 
     public void add(File collection) {
@@ -102,7 +90,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
             if (currentIndex >= collections.size()) {
                 currentIndex = collections.size() - 1;
             }
-            mClickListener.onCollectionChanged(collections.get(currentIndex), currentIndex);
+            mClickListener.onCollectionChanged(collections.get(currentIndex), null);
         } else {
             currentIndex = 0;
         }
@@ -122,8 +110,27 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         this.mClickListener = onCollectionChangedListener;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    public void init(File baseDirectory, File selectedCollection, File selectedItem) {
+        if (collections.size() > 0) {
+            collections = new ArrayList<>();
+        }
+        File[] tmpDirectories = baseDirectory.listFiles(File::isDirectory);
+        collections.add(baseDirectory);
+        if (tmpDirectories != null) {
+            Collections.addAll(collections, tmpDirectories);
+        }
+        if (selectedCollection != null) {
+            currentIndex = collections.indexOf(selectedCollection);
+        }
+        notifyDataSetChanged();
+        if (mClickListener != null && collections.size() > 0) {
+            mClickListener.onCollectionChanged(baseDirectory, selectedItem);
+        }
+    }
+
     public interface OnCollectionChangedListener {
-        void onCollectionChanged(File collection, int position);
+        void onCollectionChanged(File collection, File selectedItem);
     }
 
     private void deleteRecursive(File fileOrDirectory) {
