@@ -125,7 +125,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         }
         notifyDataSetChanged();
         if (mClickListener != null && collections.size() > 0) {
-            mClickListener.onCollectionChanged(baseDirectory, selectedItem);
+            mClickListener.onCollectionChanged(collections.get(currentIndex), selectedItem);
         }
     }
 
