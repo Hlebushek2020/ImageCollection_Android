@@ -120,6 +120,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         if (tmpDirectories != null) {
             Collections.addAll(collections, tmpDirectories);
         }
+        currentIndex = 0;
         if (selectedCollection != null) {
             currentIndex = collections.indexOf(selectedCollection);
         }
