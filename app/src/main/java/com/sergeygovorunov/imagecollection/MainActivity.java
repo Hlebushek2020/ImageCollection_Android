@@ -180,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
                 Bundle bundle = result.getData().getExtras();
                 File baseDirectory = (File) bundle.get(DirectoryChooserActivity.KEY_SELECTED_FILE);
                 collectionListViewAdapter.setBaseDirectory(baseDirectory);
-                selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_BASE_DIRECTORY, baseDirectory);
                 optMenu.findItem(R.id.create_collection).setEnabled(true);
                 optMenu.findItem(R.id.delete_collection).setEnabled(false);
                 optMenu.findItem(R.id.rename_collection).setEnabled(false);
@@ -388,6 +387,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else if (sizeY > 50.0d && fileListViewAdapter.getItemCount() > 0) {
                 if (motionEvent.getY() < motionEvent1.getY()) {
+                    selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_BASE_DIRECTORY,
+                            collectionListViewAdapter.getBaseDirectory());
                     selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_SELECTED_COLLECTION,
                             collectionListViewAdapter.getCurrentCollection());
                     selectToCollection.launch(selectToCollectionIntent);
