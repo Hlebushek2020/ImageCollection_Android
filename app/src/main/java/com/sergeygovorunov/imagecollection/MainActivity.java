@@ -313,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void OnSuccess(String text) {
                             String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
-                            File collection = new File(basePath + File.pathSeparator + text);
+                            File collection = new File(basePath + File.separatorChar + text);
                             if (collection.mkdir()) {
                                 collectionListViewAdapter.add(collection);
                             }
