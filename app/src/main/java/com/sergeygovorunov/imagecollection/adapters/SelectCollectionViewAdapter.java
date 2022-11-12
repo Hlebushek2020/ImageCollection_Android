@@ -35,7 +35,7 @@ public class SelectCollectionViewAdapter extends RecyclerView.Adapter<SelectColl
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.directory_chooser_item, parent, false);
+        View view = mInflater.inflate(R.layout.select_collection_item, parent, false);
         return new ViewHolder(view);
     }
 
@@ -63,11 +63,11 @@ public class SelectCollectionViewAdapter extends RecyclerView.Adapter<SelectColl
         @Override
         public void onClick(View view) {
             if (previous != null) {
-                previous.directoryName.setBackgroundColor(0xFFFFFFFF);
+                previous.itemView.setBackgroundColor(0xFFFFFFFF);
             }
             current = collections.get(getAdapterPosition());
             previous = this;
-            directoryName.setBackgroundColor(0xFF6200EE);
+            itemView.setBackgroundColor(0x4C3700B3);
         }
     }
 
