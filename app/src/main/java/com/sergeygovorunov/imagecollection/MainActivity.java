@@ -298,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
                             if ("".equals(text)) {
                                 return "Введите название коллекции";
                             }
-                            Pattern checkSpecPathSim = Pattern.compile("[<>:\"/\\\\|?*]");
+                            Pattern checkSpecPathSim = Pattern.compile(".*[<>:\"/\\\\|?*].*");
                             if (checkSpecPathSim.matcher(text).matches()) {
                                 return "Название коллекции содержит запрещенные символы (< > : \" / \\ | ? *)";
                             }
