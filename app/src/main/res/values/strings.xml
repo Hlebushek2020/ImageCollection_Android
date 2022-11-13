@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Image Collection</string>
+    <string name="create_collection_dialog_title">Создание</string>
+    <string name="edit_collection_validation_empty_name">Введите название коллекции</string>
+    <string name="edit_collection_validation_forbidden_symbols">Название коллекции содержит запрещенные символы (&lt; &gt; : \" / \\ | ? *)</string>
+    <string name="edit_collection_validation_exist">Коллекция с таким названием уже существует</string>
+    <string name="delete_collection_confirm">Вы действительно хотите удалить коллекцию %1$s со всеми ее файлами?</string>
+    <string name="delete_collection_item_confirm">Вы действительно хотите удалить файл %1$s?</string>
+    <string name="confirm_yes">Да</string>
+    <string name="confirm_no">Нет</string>
+    <string name="ok">ОК</string>
 </resources>

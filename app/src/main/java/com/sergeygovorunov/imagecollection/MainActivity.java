@@ -51,6 +51,7 @@ import java.util.regex.Pattern;
 public class MainActivity extends AppCompatActivity {
 
     private static final String SESSION_FILE_NAME = "session.txt";
+    private static final Pattern CHECK_SPEC_PATH_SIM = Pattern.compile("[<>:\"/\\\\|?*]");
 
     private ActivityResultLauncher<Intent> directoryChooser;
     private ActivityResultLauncher<Intent> selectToCollection;
@@ -291,21 +292,20 @@ public class MainActivity extends AppCompatActivity {
             case R.id.create_collection:
                 if (collectionListViewAdapter.getItemCount() > 0) {
                     InputAlertDialog inputAlertDialog = new InputAlertDialog(this);
-                    inputAlertDialog.setTitle("Создание");
+                    inputAlertDialog.setTitle(R.string.create_collection_dialog_title);
                     inputAlertDialog.setInputAlertDialogActions(new InputAlertDialog.InputAlertDialogActions() {
                         @Override
                         public String OnValidation(String text) {
                             if ("".equals(text)) {
-                                return "Введите название коллекции";
+                                return getString(R.string.edit_collection_validation_empty_name);
                             }
-                            Pattern checkSpecPathSim = Pattern.compile(".*[<>:\"/\\\\|?*].*");
-                            if (checkSpecPathSim.matcher(text).matches()) {
-                                return "Название коллекции содержит запрещенные символы (< > : \" / \\ | ? *)";
+                            if (CHECK_SPEC_PATH_SIM.matcher(text).matches()) {
+                                return getString(R.string.edit_collection_validation_forbidden_symbols);
                             }
                             String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
                             File checkDirectory = new File(basePath + File.separatorChar + text);
                             if (checkDirectory.exists()) {
-                                return "Коллекция с таким названием уже существует";
+                                return getString(R.string.edit_collection_validation_exist);
                             }
                             return null;
                         }
@@ -324,14 +324,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             case R.id.delete_collection:
                 AlertDialog.Builder confirmDeleteColl = new AlertDialog.Builder(this)
-                        .setMessage("Вы действительно хотите удалить коллекцию "
-                                + collectionListViewAdapter.getCurrentCollection().getName()
-                                + " со всеми ее файлами?")
-                        .setPositiveButton("Да", (dialogInterface, id) -> {
+                        .setMessage(getString(R.string.delete_collection_confirm,
+                                collectionListViewAdapter.getCurrentCollection().getName()))
+                        .setPositiveButton(R.string.confirm_yes, (dialogInterface, id) -> {
                             collectionListViewAdapter.deleteCurrent();
                             dialogInterface.dismiss();
                         })
-                        .setNegativeButton("Нет", (dialogInterface, id) -> {
+                        .setNegativeButton(R.string.confirm_no, (dialogInterface, id) -> {
                             dialogInterface.dismiss();
                         });
                 confirmDeleteColl.show();
@@ -343,16 +342,15 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public String OnValidation(String text) {
                         if ("".equals(text)) {
-                            return "Введите название коллекции";
+                            return getString(R.string.edit_collection_validation_empty_name);
                         }
-                        Pattern checkSpecPathSim = Pattern.compile("[<>:\"/\\\\|?*]");
-                        if (checkSpecPathSim.matcher(text).matches()) {
-                            return "Название коллекции содержит запрещенные символы (< > : \" / \\ | ? *)";
+                        if (CHECK_SPEC_PATH_SIM.matcher(text).matches()) {
+                            return getString(R.string.edit_collection_validation_forbidden_symbols);
                         }
                         String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
                         File checkDirectory = new File(basePath + File.separatorChar + text);
                         if (checkDirectory.exists()) {
-                            return "Коллекция с таким названием уже существует";
+                            return getString(R.string.edit_collection_validation_exist);
                         }
                         return null;
                     }
@@ -394,14 +392,15 @@ public class MainActivity extends AppCompatActivity {
                     selectToCollection.launch(selectToCollectionIntent);
                 } else {
                     File currentItem = fileListViewAdapter.getCurrentItem();
-                    deleteFileAlert.setMessage("Вы действительно хотите удалить файл " + currentItem.getName() + "?")
-                            .setPositiveButton("Да", (dialogInterface, id) -> {
+                    deleteFileAlert.setMessage(getString(R.string.delete_collection_item_confirm,
+                                    currentItem.getName()))
+                            .setPositiveButton(R.string.confirm_yes, (dialogInterface, id) -> {
                                 if (currentItem.delete()) {
                                     fileListViewAdapter.removeCurrentItem(true);
                                 }
                                 dialogInterface.dismiss();
                             })
-                            .setNegativeButton("Нет", (dialogInterface, id) -> {
+                            .setNegativeButton(R.string.confirm_no, (dialogInterface, id) -> {
                                 dialogInterface.dismiss();
                             });
                     deleteFileAlert.show();
