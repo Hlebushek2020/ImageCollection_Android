@@ -3,21 +3,21 @@
 
     <item
         android:id="@+id/open_folder"
-        android:title="Open Folder" />
+        android:title="@string/menu_item_open_folder" />
 
     <item
         android:id="@+id/create_collection"
         android:enabled="false"
-        android:title="Create Collection" />
+        android:title="@string/menu_item_create_collection" />
 
     <item
         android:id="@+id/rename_collection"
         android:enabled="false"
-        android:title="Rename Collection" />
+        android:title="@string/menu_item_rename_collection" />
 
     <item
         android:id="@+id/delete_collection"
         android:enabled="false"
-        android:title="Delete Collection" />
+        android:title="@string/menu_item_delete_collection" />
 
 </menu>

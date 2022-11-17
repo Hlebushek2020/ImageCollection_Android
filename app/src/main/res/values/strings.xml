@@ -9,4 +9,8 @@
     <string name="confirm_yes">Да</string>
     <string name="confirm_no">Нет</string>
     <string name="ok">ОК</string>
+    <string name="menu_item_open_folder">Открыть папку</string>
+    <string name="menu_item_create_collection">Создать коллекцию</string>
+    <string name="menu_item_rename_collection">Переименовать коллекцию</string>
+    <string name="menu_item_delete_collection">Удалить коллекцию</string>
 </resources>
