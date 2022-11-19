@@ -103,6 +103,7 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
     public void setCollection(File collection, File selectedItem) {
         if (files.size() > 0) {
             files = new ArrayList<>();
+            currentIndex = 0;
         }
         File[] tmpFiles = collection.listFiles(File::isFile);
         for (File file : tmpFiles) {

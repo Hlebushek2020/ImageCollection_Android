@@ -1,14 +1,22 @@
 package com.sergeygovorunov.imagecollection.adapters;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.graphics.Path;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sergeygovorunov.imagecollection.R;
@@ -16,6 +24,9 @@ import com.sergeygovorunov.imagecollection.R;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionListViewAdapter.ViewHolder> {
 
@@ -82,18 +93,50 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         notifyItemInserted(collections.size() - 1);
     }
 
-    public void deleteCurrent() {
-        // TODO: async task
-        deleteRecursive(collections.get(currentIndex));
-        notifyItemRemoved(currentIndex);
-        if (collections.size() > 0) {
-            if (currentIndex >= collections.size()) {
-                currentIndex = collections.size() - 1;
+    public void deleteCurrent(Context ctx) {
+        int notificationId = ThreadLocalRandom.current().nextInt();
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(ctx);
+
+        String channelId = getCurrentCollection().getPath();
+        NotificationChannel channel = new NotificationChannel(channelId,
+                ctx.getString(R.string.app_name), NotificationManager.IMPORTANCE_DEFAULT);
+        notificationManager.createNotificationChannel(channel);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx, channelId)
+                .setContentTitle("удаление коллекции")
+                .setSmallIcon(R.mipmap.ic_launcher_foreground)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        builder.setProgress(100, 0, true);
+        notificationManager.notify(notificationId, builder.build());
+
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        es.execute(() -> {
+            File collection = collections.remove(currentIndex);
+            handler.post(() -> {
+                notifyItemRemoved(currentIndex);
+            });
+            if (collections.size() > 0) {
+                if (currentIndex >= collections.size()) {
+                    currentIndex = collections.size() - 1;
+                }
+                handler.post(() -> {
+                    mClickListener.onCollectionChanged(collections.get(currentIndex), null);
+                });
+                if (!deleteRecursive(collection, notificationManager, notificationId, builder)) {
+                    collections.add(collection);
+                    builder.setProgress(100, 100, false)
+                            .setContentText("при удалении коллекции произошли ошибки, коллекция удалена не полностью");
+                    notificationManager.notify(notificationId, builder.build());
+                } else {
+                    notificationManager.cancel(notificationId);
+                }
+            } else {
+                currentIndex = 0;
             }
-            mClickListener.onCollectionChanged(collections.get(currentIndex), null);
-        } else {
-            currentIndex = 0;
-        }
+        });
     }
 
     public boolean renameCurrent(String newName) {
@@ -134,12 +177,22 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         void onCollectionChanged(File collection, File selectedItem);
     }
 
-    private void deleteRecursive(File fileOrDirectory) {
-        if (fileOrDirectory.isDirectory()) {
-            for (File child : fileOrDirectory.listFiles()) {
-                deleteRecursive(child);
+    private boolean deleteRecursive(File item, NotificationManagerCompat notificationManager,
+                                    int notificationId, NotificationCompat.Builder builder) {
+        boolean success = true;
+        if (item.isDirectory()) {
+            for (File child : item.listFiles()) {
+                success = deleteRecursive(child, notificationManager, notificationId, builder);
             }
         }
-        fileOrDirectory.delete();
+        try {
+            builder.setContentText("Удаление: " + item.getPath().substring(
+                    getBaseDirectory().getPath().length()));
+            notificationManager.notify(notificationId, builder.build());
+            success = success && item.delete();
+        } catch (Exception ex) {
+            success = false;
+        }
+        return success;
     }
 }

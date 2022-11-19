@@ -327,7 +327,7 @@ public class MainActivity extends AppCompatActivity {
                         .setMessage(getString(R.string.delete_collection_confirm,
                                 collectionListViewAdapter.getCurrentCollection().getName()))
                         .setPositiveButton(R.string.confirm_yes, (dialogInterface, id) -> {
-                            collectionListViewAdapter.deleteCurrent();
+                            collectionListViewAdapter.deleteCurrent(this);
                             dialogInterface.dismiss();
                         })
                         .setNegativeButton(R.string.confirm_no, (dialogInterface, id) -> {
