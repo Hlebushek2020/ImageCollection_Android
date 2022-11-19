@@ -13,4 +13,7 @@
     <string name="menu_item_create_collection">Создать коллекцию</string>
     <string name="menu_item_rename_collection">Переименовать коллекцию</string>
     <string name="menu_item_delete_collection">Удалить коллекцию</string>
+    <string name="delete_collection_notification_error">При удалении коллекции произошли ошибки, коллекция удалена не полностью</string>
+    <string name="delete_collection_notification_title">Удаление коллекции: %1$s</string>
+    <string name="delete_collection_notification_text">Удаление: %1$s</string>
 </resources>

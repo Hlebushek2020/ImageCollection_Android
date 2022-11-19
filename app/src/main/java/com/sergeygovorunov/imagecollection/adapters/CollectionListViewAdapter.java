@@ -103,7 +103,8 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         notificationManager.createNotificationChannel(channel);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx, channelId)
-                .setContentTitle("удаление коллекции")
+                .setContentTitle(ctx.getString(R.string.delete_collection_notification_title,
+                        getCurrentCollection().getName()))
                 .setSmallIcon(R.mipmap.ic_launcher_foreground)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
@@ -125,10 +126,10 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
                 handler.post(() -> {
                     mClickListener.onCollectionChanged(collections.get(currentIndex), null);
                 });
-                if (!deleteRecursive(collection, notificationManager, notificationId, builder)) {
+                if (!deleteRecursive(ctx, collection, notificationManager, notificationId, builder)) {
                     collections.add(collection);
                     builder.setProgress(100, 100, false)
-                            .setContentText("при удалении коллекции произошли ошибки, коллекция удалена не полностью");
+                            .setContentText(ctx.getString(R.string.delete_collection_notification_error));
                     notificationManager.notify(notificationId, builder.build());
                 } else {
                     notificationManager.cancel(notificationId);
@@ -177,17 +178,18 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         void onCollectionChanged(File collection, File selectedItem);
     }
 
-    private boolean deleteRecursive(File item, NotificationManagerCompat notificationManager,
+    private boolean deleteRecursive(Context ctx, File item, NotificationManagerCompat notificationManager,
                                     int notificationId, NotificationCompat.Builder builder) {
         boolean success = true;
         if (item.isDirectory()) {
             for (File child : item.listFiles()) {
-                success = deleteRecursive(child, notificationManager, notificationId, builder);
+                success = deleteRecursive(ctx, child, notificationManager, notificationId, builder);
             }
         }
         try {
-            builder.setContentText("Удаление: " + item.getPath().substring(
-                    getBaseDirectory().getPath().length()));
+            //Thread.sleep(10000);
+            builder.setContentText(ctx.getString(R.string.delete_collection_notification_text,
+                    item.getPath().substring(getBaseDirectory().getPath().length())));
             notificationManager.notify(notificationId, builder.build());
             success = success && item.delete();
         } catch (Exception ex) {
