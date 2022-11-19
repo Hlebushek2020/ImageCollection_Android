@@ -99,7 +99,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
 
         String channelId = getCurrentCollection().getPath();
         NotificationChannel channel = new NotificationChannel(channelId,
-                ctx.getString(R.string.app_name), NotificationManager.IMPORTANCE_DEFAULT);
+                "Delete Collection", NotificationManager.IMPORTANCE_DEFAULT);
         notificationManager.createNotificationChannel(channel);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx, channelId)
