@@ -4,9 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.graphics.Path;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -29,6 +26,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionListViewAdapter.ViewHolder> {
+
+    private static final String DELETE_NOTIFICATION_CHANNEL_ID = "Delete Collection";
 
     private LayoutInflater mInflater;
     private OnCollectionChangedListener mClickListener;
@@ -97,12 +96,11 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         int notificationId = ThreadLocalRandom.current().nextInt();
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(ctx);
 
-        String channelId = getCurrentCollection().getPath();
-        NotificationChannel channel = new NotificationChannel(channelId,
-                "Delete Collection", NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationChannel channel = new NotificationChannel(DELETE_NOTIFICATION_CHANNEL_ID,
+                DELETE_NOTIFICATION_CHANNEL_ID, NotificationManager.IMPORTANCE_DEFAULT);
         notificationManager.createNotificationChannel(channel);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx, channelId)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx, DELETE_NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(ctx.getString(R.string.delete_collection_notification_title,
                         getCurrentCollection().getName()))
                 .setSmallIcon(R.mipmap.ic_launcher_foreground)
