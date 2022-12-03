@@ -3,14 +3,12 @@ package com.sergeygovorunov.imagecollection;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.FileUtils;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.Menu;
@@ -19,7 +17,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.EditText;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -40,9 +37,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
@@ -51,35 +46,30 @@ import java.util.regex.Pattern;
 public class MainActivity extends AppCompatActivity {
 
     private static final String SESSION_FILE_NAME = "session.txt";
-    private static final Pattern CHECK_SPEC_PATH_SIM = Pattern.compile("[<>:\"/\\\\|?*]");
+    private static final Pattern CHECK_SPECIAL_PATH_SYMBOLS = Pattern.compile("[<>:\"/\\\\|?*]");
 
-    private ActivityResultLauncher<Intent> directoryChooser;
-    private ActivityResultLauncher<Intent> selectToCollection;
-    private Intent selectToCollectionIntent;
+    private ActivityResultLauncher<Intent> arl_directoryChooser;
+    private ActivityResultLauncher<Intent> arl_selectToCollection;
+    private Intent intent_selectToCollection;
     private GestureDetectorCompat gestureDetector;
 
-    private RecyclerView rv_collection_list;
-    private RecyclerView rv_file_list;
-    private DrawerLayout main_drawer_layout;
-    private ImageSwitcher image_switcher;
-    private Menu optMenu;
+    private DrawerLayout drawerLayout_main;
+    private ImageSwitcher imageSwitcher;
+    private Menu menu_options;
 
     private CollectionListViewAdapter collectionListViewAdapter;
     private FileListViewAdapter fileListViewAdapter;
 
-    private Animation image_switcher_lin;
-    private Animation image_switcher_lout;
-    private Animation image_switcher_rin;
-    private Animation image_switcher_rout;
-    private Animation image_switcher_down_p1;
-    //private Animation image_switcher_down_p2;
-    private Animation image_switcher_up_p1;
-    //private Animation image_switcher_up_p2;
+    private Animation anim_imageSwitcher_lin;
+    private Animation anim_imageSwitcher_lout;
+    private Animation anim_imageSwitcher_rin;
+    private Animation anim_imageSwitcher_rout;
+    private Animation anim_imageSwitcher_down;
+    private Animation anim_imageSwitcher_up;
 
     private int drawerState;
-    //private Object drawerStateSync = new Object();
 
-    private AlertDialog.Builder deleteFileAlert;
+    private AlertDialog.Builder adb_deleteFile;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -87,38 +77,38 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //
-        image_switcher = findViewById(R.id.image_switcher);
-        rv_file_list = findViewById(R.id.file_list);
-        main_drawer_layout = findViewById(R.id.main_drawer_layout);
-        rv_collection_list = findViewById(R.id.collection_list);
+        imageSwitcher = findViewById(R.id.image_switcher);
+        RecyclerView rv_fileList = findViewById(R.id.file_list);
+        drawerLayout_main = findViewById(R.id.main_drawer_layout);
+        RecyclerView rv_collectionList = findViewById(R.id.collection_list);
         //
         fileListViewAdapter = new FileListViewAdapter(this);
         fileListViewAdapter.setOnItemClickListener((item, action) -> {
             // anim
             switch (action) {
                 case NEXT:
-                    image_switcher.setInAnimation(image_switcher_rin);
-                    image_switcher.setOutAnimation(image_switcher_rout);
+                    imageSwitcher.setInAnimation(anim_imageSwitcher_rin);
+                    imageSwitcher.setOutAnimation(anim_imageSwitcher_rout);
                     break;
                 case MOVE_GET_NEXT:
-                    image_switcher.setInAnimation(image_switcher_rin);
-                    image_switcher.setOutAnimation(image_switcher_down_p1);
+                    imageSwitcher.setInAnimation(anim_imageSwitcher_rin);
+                    imageSwitcher.setOutAnimation(anim_imageSwitcher_down);
                     break;
                 case REMOVE_GET_NEXT:
-                    image_switcher.setInAnimation(image_switcher_rin);
-                    image_switcher.setOutAnimation(image_switcher_up_p1);
+                    imageSwitcher.setInAnimation(anim_imageSwitcher_rin);
+                    imageSwitcher.setOutAnimation(anim_imageSwitcher_up);
                     break;
                 case PREVIOUS:
-                    image_switcher.setInAnimation(image_switcher_lin);
-                    image_switcher.setOutAnimation(image_switcher_lout);
+                    imageSwitcher.setInAnimation(anim_imageSwitcher_lin);
+                    imageSwitcher.setOutAnimation(anim_imageSwitcher_lout);
                     break;
                 case MOVE_GET_PREVIOUS:
-                    image_switcher.setInAnimation(image_switcher_lin);
-                    image_switcher.setOutAnimation(image_switcher_down_p1);
+                    imageSwitcher.setInAnimation(anim_imageSwitcher_lin);
+                    imageSwitcher.setOutAnimation(anim_imageSwitcher_down);
                     break;
                 case REMOVE_GET_PREVIOUS:
-                    image_switcher.setInAnimation(image_switcher_lin);
-                    image_switcher.setOutAnimation(image_switcher_up_p1);
+                    imageSwitcher.setInAnimation(anim_imageSwitcher_lin);
+                    imageSwitcher.setOutAnimation(anim_imageSwitcher_up);
                     break;
             }
             // image
@@ -136,36 +126,34 @@ public class MainActivity extends AppCompatActivity {
             }
             Bitmap bitmap = Bitmap.createScaledBitmap(bitmapOrig, (int) nw, (int) nh, false);
             Drawable drawable = new BitmapDrawable(bitmap);
-            image_switcher.setImageDrawable(drawable);
-            main_drawer_layout.closeDrawers();
+            imageSwitcher.setImageDrawable(drawable);
+            drawerLayout_main.closeDrawers();
         });
-        rv_file_list.setAdapter(fileListViewAdapter);
+        rv_fileList.setAdapter(fileListViewAdapter);
         //
         collectionListViewAdapter = new CollectionListViewAdapter(this);
         collectionListViewAdapter.setOnCollectionChangedListener((collection, item) -> {
             fileListViewAdapter.setCollection(collection, item);
             setTitle(collection.getName());
-            main_drawer_layout.closeDrawers();
+            drawerLayout_main.closeDrawers();
             if (!collection.equals(collectionListViewAdapter.getBaseDirectory())) {
-                optMenu.findItem(R.id.delete_collection).setEnabled(true);
-                optMenu.findItem(R.id.rename_collection).setEnabled(true);
+                menu_options.findItem(R.id.delete_collection).setEnabled(true);
+                menu_options.findItem(R.id.rename_collection).setEnabled(true);
             } else {
-                optMenu.findItem(R.id.delete_collection).setEnabled(false);
-                optMenu.findItem(R.id.rename_collection).setEnabled(false);
+                menu_options.findItem(R.id.delete_collection).setEnabled(false);
+                menu_options.findItem(R.id.rename_collection).setEnabled(false);
             }
         });
-        rv_collection_list.setAdapter(collectionListViewAdapter);
+        rv_collectionList.setAdapter(collectionListViewAdapter);
         //
-        image_switcher_lin = AnimationUtils.loadAnimation(this, R.anim.image_switcher_lin);
-        image_switcher_lout = AnimationUtils.loadAnimation(this, R.anim.image_switcher_lout);
-        image_switcher_rin = AnimationUtils.loadAnimation(this, R.anim.image_switcher_rin);
-        image_switcher_rout = AnimationUtils.loadAnimation(this, R.anim.image_switcher_rout);
-        image_switcher_down_p1 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_down);
-        //image_switcher_down_p2 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_down_p2);
-        image_switcher_up_p1 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_up);
-        //image_switcher_up_p2 = AnimationUtils.loadAnimation(this, R.anim.image_switcher_up_p2);
+        anim_imageSwitcher_lin = AnimationUtils.loadAnimation(this, R.anim.image_switcher_lin);
+        anim_imageSwitcher_lout = AnimationUtils.loadAnimation(this, R.anim.image_switcher_lout);
+        anim_imageSwitcher_rin = AnimationUtils.loadAnimation(this, R.anim.image_switcher_rin);
+        anim_imageSwitcher_rout = AnimationUtils.loadAnimation(this, R.anim.image_switcher_rout);
+        anim_imageSwitcher_down = AnimationUtils.loadAnimation(this, R.anim.image_switcher_down);
+        anim_imageSwitcher_up = AnimationUtils.loadAnimation(this, R.anim.image_switcher_up);
         //
-        image_switcher.setFactory(() -> {
+        imageSwitcher.setFactory(() -> {
             ImageView imageView = new ImageView(this);
             imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             imageView.setLayoutParams(new ImageSwitcher.LayoutParams(
@@ -174,20 +162,20 @@ public class MainActivity extends AppCompatActivity {
             return imageView;
         });
         //
-        selectToCollectionIntent = new Intent(this, SelectCollectionActivity.class);
+        intent_selectToCollection = new Intent(this, SelectCollectionActivity.class);
         //
-        directoryChooser = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        arl_directoryChooser = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK) {
                 Bundle bundle = result.getData().getExtras();
                 File baseDirectory = (File) bundle.get(DirectoryChooserActivity.KEY_SELECTED_FILE);
                 collectionListViewAdapter.setBaseDirectory(baseDirectory);
-                optMenu.findItem(R.id.create_collection).setEnabled(true);
-                optMenu.findItem(R.id.delete_collection).setEnabled(false);
-                optMenu.findItem(R.id.rename_collection).setEnabled(false);
+                menu_options.findItem(R.id.create_collection).setEnabled(true);
+                menu_options.findItem(R.id.delete_collection).setEnabled(false);
+                menu_options.findItem(R.id.rename_collection).setEnabled(false);
             }
         });
         //
-        selectToCollection = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        arl_selectToCollection = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK) {
                 Bundle bundle = result.getData().getExtras();
                 File toCollection = (File) bundle.get(SelectCollectionActivity.KEY_SELECTED_COLLECTION);
@@ -205,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         });
         //
         gestureDetector = new GestureDetectorCompat(this, new SimpleGestureListener());
-        main_drawer_layout.setOnTouchListener((view, motionEvent) -> {
+        drawerLayout_main.setOnTouchListener((view, motionEvent) -> {
             //synchronized (drawerStateSync) {
             if (drawerState == DrawerLayout.STATE_IDLE) {
                 gestureDetector.onTouchEvent(motionEvent);
@@ -213,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
             //}
             return false;
         });
-        main_drawer_layout.addDrawerListener(new DrawerLayout.DrawerListener() {
+        drawerLayout_main.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
 
@@ -237,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         //
-        deleteFileAlert = new AlertDialog.Builder(this);
+        adb_deleteFile = new AlertDialog.Builder(this);
         //
         File session = new File(getExternalFilesDir(null).getPath()
                 + File.separatorChar + SESSION_FILE_NAME);
@@ -269,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        optMenu = menu;
+        menu_options = menu;
         if (collectionListViewAdapter.getItemCount() > 0) {
             menu.findItem(R.id.create_collection).setEnabled(true);
             if (!collectionListViewAdapter.getCurrentCollection().equals(
@@ -287,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.open_folder:
                 Intent chooseFile = new Intent(this, DirectoryChooserActivity.class);
-                directoryChooser.launch(chooseFile);
+                arl_directoryChooser.launch(chooseFile);
                 break;
             case R.id.create_collection:
                 if (collectionListViewAdapter.getItemCount() > 0) {
@@ -299,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
                             if ("".equals(text)) {
                                 return getString(R.string.edit_collection_validation_empty_name);
                             }
-                            if (CHECK_SPEC_PATH_SIM.matcher(text).matches()) {
+                            if (CHECK_SPECIAL_PATH_SYMBOLS.matcher(text).matches()) {
                                 return getString(R.string.edit_collection_validation_forbidden_symbols);
                             }
                             String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
@@ -344,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
                         if ("".equals(text)) {
                             return getString(R.string.edit_collection_validation_empty_name);
                         }
-                        if (CHECK_SPEC_PATH_SIM.matcher(text).matches()) {
+                        if (CHECK_SPECIAL_PATH_SYMBOLS.matcher(text).matches()) {
                             return getString(R.string.edit_collection_validation_forbidden_symbols);
                         }
                         String basePath = collectionListViewAdapter.getBaseDirectory().getPath();
@@ -385,14 +373,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else if (sizeY > 50.0d && fileListViewAdapter.getItemCount() > 0) {
                 if (motionEvent.getY() < motionEvent1.getY()) {
-                    selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_BASE_DIRECTORY,
+                    intent_selectToCollection.putExtra(SelectCollectionActivity.KEY_BASE_DIRECTORY,
                             collectionListViewAdapter.getBaseDirectory());
-                    selectToCollectionIntent.putExtra(SelectCollectionActivity.KEY_SELECTED_COLLECTION,
+                    intent_selectToCollection.putExtra(SelectCollectionActivity.KEY_SELECTED_COLLECTION,
                             collectionListViewAdapter.getCurrentCollection());
-                    selectToCollection.launch(selectToCollectionIntent);
+                    arl_selectToCollection.launch(intent_selectToCollection);
                 } else {
                     File currentItem = fileListViewAdapter.getCurrentItem();
-                    deleteFileAlert.setMessage(getString(R.string.delete_collection_item_confirm,
+                    adb_deleteFile.setMessage(getString(R.string.delete_collection_item_confirm,
                                     currentItem.getName()))
                             .setPositiveButton(R.string.confirm_yes, (dialogInterface, id) -> {
                                 if (currentItem.delete()) {
@@ -403,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                             .setNegativeButton(R.string.confirm_no, (dialogInterface, id) -> {
                                 dialogInterface.dismiss();
                             });
-                    deleteFileAlert.show();
+                    adb_deleteFile.show();
                 }
             }
             return true;

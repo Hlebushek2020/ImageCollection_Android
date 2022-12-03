@@ -29,19 +29,19 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
 
     private static final String DELETE_NOTIFICATION_CHANNEL_ID = "Delete Collection";
 
-    private LayoutInflater mInflater;
-    private OnCollectionChangedListener mClickListener;
+    private final LayoutInflater layoutInflater;
+    private OnCollectionChangedListener collectionChangedListener;
     private ArrayList<File> collections = new ArrayList<>();
     private int currentIndex = 0;
 
     public CollectionListViewAdapter(Context context) {
-        mInflater = LayoutInflater.from(context);
+        layoutInflater = LayoutInflater.from(context);
     }
 
     @NonNull
     @Override
     public CollectionListViewAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.collection_list_item, parent, false);
+        View view = layoutInflater.inflate(R.layout.collection_list_item, parent, false);
         return new ViewHolder(view);
     }
 
@@ -68,9 +68,9 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
 
         @Override
         public void onClick(View view) {
-            if (mClickListener != null) {
+            if (collectionChangedListener != null) {
                 currentIndex = getAdapterPosition();
-                mClickListener.onCollectionChanged(collections.get(currentIndex), null);
+                collectionChangedListener.onCollectionChanged(collections.get(currentIndex), null);
             }
         }
     }
@@ -122,7 +122,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
                     currentIndex = collections.size() - 1;
                 }
                 handler.post(() -> {
-                    mClickListener.onCollectionChanged(collections.get(currentIndex), null);
+                    collectionChangedListener.onCollectionChanged(collections.get(currentIndex), null);
                 });
                 if (!deleteRecursive(ctx, collection, notificationManager, notificationId, builder)) {
                     collections.add(collection);
@@ -149,7 +149,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
     }
 
     public void setOnCollectionChangedListener(OnCollectionChangedListener onCollectionChangedListener) {
-        this.mClickListener = onCollectionChangedListener;
+        this.collectionChangedListener = onCollectionChangedListener;
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -167,8 +167,8 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
             currentIndex = collections.indexOf(selectedCollection);
         }
         notifyDataSetChanged();
-        if (mClickListener != null && collections.size() > 0) {
-            mClickListener.onCollectionChanged(collections.get(currentIndex), selectedItem);
+        if (collectionChangedListener != null && collections.size() > 0) {
+            collectionChangedListener.onCollectionChanged(collections.get(currentIndex), selectedItem);
         }
     }
 

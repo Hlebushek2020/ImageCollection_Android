@@ -17,13 +17,13 @@ import java.util.Collections;
 
 public class SelectCollectionViewAdapter extends RecyclerView.Adapter<SelectCollectionViewAdapter.ViewHolder> {
 
-    private LayoutInflater mInflater;
+    private final LayoutInflater layoutInflater;
     private File current = null;
     private ViewHolder previous = null;
-    private ArrayList<File> collections = new ArrayList<>();
+    private final ArrayList<File> collections = new ArrayList<>();
 
     public SelectCollectionViewAdapter(Context context, File initDirectory, File currentCollection) {
-        mInflater = LayoutInflater.from(context);
+        layoutInflater = LayoutInflater.from(context);
         collections.add(initDirectory);
         File[] newFiles = initDirectory.listFiles(File::isDirectory);
         if (newFiles != null) {
@@ -35,7 +35,7 @@ public class SelectCollectionViewAdapter extends RecyclerView.Adapter<SelectColl
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.select_collection_item, parent, false);
+        View view = layoutInflater.inflate(R.layout.select_collection_item, parent, false);
         return new ViewHolder(view);
     }
 

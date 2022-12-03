@@ -19,12 +19,12 @@ import java.util.Collections;
 public class DirectoryChooserViewAdapter extends RecyclerView.Adapter<DirectoryChooserViewAdapter.ViewHolder> {
 
     private File current;
-    private ArrayList<File> directoriesInCurrent = new ArrayList<>();
-    private LayoutInflater mInflater;
+    private final ArrayList<File> directoriesInCurrent = new ArrayList<>();
+    private final LayoutInflater layoutInflater;
 
     // data is passed into the constructor
     public DirectoryChooserViewAdapter(Context context, File initDirectory) {
-        this.mInflater = LayoutInflater.from(context);
+        this.layoutInflater = LayoutInflater.from(context);
         current = initDirectory;
         File[] newFiles = initDirectory.listFiles(File::isDirectory);
         if (newFiles != null) {
@@ -36,7 +36,7 @@ public class DirectoryChooserViewAdapter extends RecyclerView.Adapter<DirectoryC
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.directory_chooser_item, parent, false);
+        View view = layoutInflater.inflate(R.layout.directory_chooser_item, parent, false);
         return new ViewHolder(view);
     }
 
