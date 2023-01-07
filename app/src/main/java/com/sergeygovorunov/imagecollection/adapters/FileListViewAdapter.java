@@ -119,11 +119,7 @@ public class FileListViewAdapter extends RecyclerView.Adapter<FileListViewAdapte
         }
         notifyDataSetChanged();
         if (itemChangedListener != null) {
-            if (files.size() > 0) {
-                itemChangedListener.onItemChanged(files.get(currentIndex), ActionThatChangedItem.NEXT);
-            } else {
-                itemChangedListener.onItemChanged(null, ActionThatChangedItem.NEXT);
-            }
+            itemChangedListener.onItemChanged(files.size() > 0 ? files.get(currentIndex) : null, ActionThatChangedItem.NEXT);
         }
     }
 
