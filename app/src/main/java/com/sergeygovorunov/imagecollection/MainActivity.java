@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -112,20 +113,23 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
             // image
-            Bitmap bitmapOrig = BitmapFactory.decodeFile(item.getPath());
-            double w = bitmapOrig.getWidth();
-            double h = bitmapOrig.getHeight();
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            double nw = displayMetrics.widthPixels;
-            double nh = displayMetrics.heightPixels;
-            if (w > h) {
-                nh = nw / (w / h);
-            } else {
-                nw = nh / (h / w);
+            Drawable drawable = null;
+            if (item != null) {
+                Bitmap bitmapOrig = BitmapFactory.decodeFile(item.getPath());
+                double w = bitmapOrig.getWidth();
+                double h = bitmapOrig.getHeight();
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                double nw = displayMetrics.widthPixels;
+                double nh = displayMetrics.heightPixels;
+                if (w > h) {
+                    nh = nw / (w / h);
+                } else {
+                    nw = nh / (h / w);
+                }
+                Bitmap bitmap = Bitmap.createScaledBitmap(bitmapOrig, (int) nw, (int) nh, false);
+                drawable = new BitmapDrawable(null, bitmap);
             }
-            Bitmap bitmap = Bitmap.createScaledBitmap(bitmapOrig, (int) nw, (int) nh, false);
-            Drawable drawable = new BitmapDrawable(bitmap);
             imageSwitcher.setImageDrawable(drawable);
             drawerLayout_main.closeDrawers();
         });
