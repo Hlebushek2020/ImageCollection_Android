@@ -32,7 +32,7 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
     private final LayoutInflater layoutInflater;
     private OnCollectionChangedListener collectionChangedListener;
     private ArrayList<File> collections = new ArrayList<>();
-    private int currentIndex = 0;
+    private volatile int currentIndex = 0;
 
     public CollectionListViewAdapter(Context context) {
         layoutInflater = LayoutInflater.from(context);
@@ -114,8 +114,9 @@ public class CollectionListViewAdapter extends RecyclerView.Adapter<CollectionLi
         ExecutorService es = Executors.newSingleThreadExecutor();
         es.execute(() -> {
             File collection = collections.remove(currentIndex);
+            final int tmpCurrentIndex = currentIndex;
             handler.post(() -> {
-                notifyItemRemoved(currentIndex);
+                notifyItemRemoved(tmpCurrentIndex);
             });
             if (collections.size() > 0) {
                 if (currentIndex >= collections.size()) {
