@@ -4,6 +4,7 @@ plugins {
 
 android {
     compileSdk 32
+    namespace 'com.sergeygovorunov.imagecollection'
 
     defaultConfig {
         applicationId "com.sergeygovorunov.imagecollection"
@@ -11,7 +12,6 @@ android {
         targetSdk 32
         versionCode 1
         versionName "0.1"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
