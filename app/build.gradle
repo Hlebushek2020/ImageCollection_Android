@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.sergeygovorunov.imagecollection"
-        minSdk 29
+      minSdk 30
         targetSdk 32
         versionCode 1
         versionName "0.1"
