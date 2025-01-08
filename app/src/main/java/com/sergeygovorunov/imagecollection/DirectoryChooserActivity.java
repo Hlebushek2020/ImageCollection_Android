@@ -1,47 +1,54 @@
 package com.sergeygovorunov.imagecollection;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
 import android.widget.Button;
-
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 import com.sergeygovorunov.imagecollection.adapters.DirectoryChooserViewAdapter;
-
 import java.io.File;
 
 public class DirectoryChooserActivity extends AppCompatActivity {
 
-    public static final String KEY_SELECTED_FILE = "selectedFile";
+  public static final String KEY_SELECTED_FILE = "selectedFile";
 
-    private DirectoryChooserViewAdapter directoryChooserViewAdapter;
+  private DirectoryChooserViewAdapter directoryChooserViewAdapter;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_directory_chooser);
-        RecyclerView recyclerView_directories = findViewById(R.id.folder_list);
-        File current = Environment.getExternalStorageDirectory();
-        directoryChooserViewAdapter = new DirectoryChooserViewAdapter(this, current);
-        recyclerView_directories.setAdapter(directoryChooserViewAdapter);
-        Button button_ok = findViewById(R.id.ok);
-        button_ok.setOnClickListener(view -> {
-            Intent data = new Intent();
-            data.putExtra(KEY_SELECTED_FILE, directoryChooserViewAdapter.getCurrent());
-            setResult(RESULT_OK, data);
-            finish();
-        });
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_directory_chooser);
+    RecyclerView recyclerView_directories = findViewById(R.id.folder_list);
+
+    if (!Environment.isExternalStorageManager()) {
+      Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+      Uri uri = Uri.fromParts("package", getPackageName(), null);
+      intent.setData(uri);
+      startActivity(intent);
     }
 
-    @Override
-    public void onBackPressed() {
-        File current = directoryChooserViewAdapter.getCurrent();
-        if (Environment.getExternalStorageDirectory().equals(current)) {
-            super.onBackPressed();
-        } else {
-            directoryChooserViewAdapter.previous();
-        }
+    File current = Environment.getExternalStorageDirectory();
+    directoryChooserViewAdapter = new DirectoryChooserViewAdapter(this, current);
+    recyclerView_directories.setAdapter(directoryChooserViewAdapter);
+    Button button_ok = findViewById(R.id.ok);
+    button_ok.setOnClickListener(view -> {
+      Intent data = new Intent();
+      data.putExtra(KEY_SELECTED_FILE, directoryChooserViewAdapter.getCurrent());
+      setResult(RESULT_OK, data);
+      finish();
+    });
+  }
+
+  @Override
+  public void onBackPressed() {
+    File current = directoryChooserViewAdapter.getCurrent();
+    if (Environment.getExternalStorageDirectory().equals(current)) {
+      super.onBackPressed();
+    } else {
+      directoryChooserViewAdapter.previous();
     }
+  }
 }
